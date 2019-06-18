@@ -1,0 +1,6 @@
+include py.typed
+include tests/*.py
+include tools/*
+include tox.ini
+exclude .*.swp
+exclude */.*.swp
