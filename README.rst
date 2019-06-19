@@ -120,9 +120,16 @@ return an ``ArrayInt32``, which is either ``foo`` if it is an array of ``int32``
 ``foo`` whose elements are the conversion of the elements of ``foo`` to ``int32``.
 
 De/serialization
-----------------
+................
 
 The phantom types also provide read and write operations for efficiently storing data on the disk.
 That is, writing ``ArrayInt32.read(path)`` will read an array of ``int32`` elements from the
 specified path, and ``ArrayInt32.write(foo, path)`` will write an array of ``int32`` elements
 into the specified path.
+
+DynaMake
+--------
+
+A :py:func:`tgutils.tg_require_in_parallel` function allows for collecting context for optimizing
+the use of ``qsubber`` to execute actions in parallel on our SunGrid. This is a convoluted and
+sub-optimal mechanism but has significant performance benefits in our environment.
