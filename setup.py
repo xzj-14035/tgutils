@@ -1,14 +1,17 @@
+from glob import glob
+from setuptools import find_packages
+from setuptools import setup
+
 import distutils.cmd
 import distutils.log
 import os
 import re
 import subprocess
 
-from glob import glob
-from setuptools import find_packages
-from setuptools import setup
-
 VERSION = '0.1'
+
+
+os.environ['MYPYPATH'] = os.path.abspath('stubs')
 
 
 def readme():
@@ -175,8 +178,8 @@ class ToxCommand(SimpleCommand):
 
 
 # TODO: Replicated in tox.ini
-INSTALL_REQUIRES = []
-TESTS_REQUIRE = ['nose', 'testfixtures', 'coverage']
+INSTALL_REQUIRES = ['pandas', 'numpy', 'feather-format']
+TESTS_REQUIRE = ['nose', 'parameterized', 'testfixtures', 'coverage']
 DEVELOP_REQUIRES = ['autopep8', 'isort', 'mypy', 'pylint', 'sphinx', 'sphinx_rtd_theme', 'tox']
 
 

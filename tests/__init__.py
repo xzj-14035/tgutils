@@ -1,16 +1,30 @@
 """
-Test the tgutils module.
+Common utilities for tests.
 """
 
 from unittest import TestCase
 
-import tgutils
+import os
+import shutil
+import sys
+import tempfile
 
-# pylint: disable=missing-docstring,too-many-public-methods
+# pylint: disable=missing-docstring
 
 
-class TestTGUtils(TestCase):
+class TestWithFiles(TestCase):
 
-    def test_do_nothing(self) -> None:
-        tgutils.do_nothing()
-        self.assertEqual(1, 1)
+    def setUp(self) -> None:
+        super().setUp()
+        self.maxDiff = None  # pylint: disable=invalid-name
+        if sys.path[0] != os.getcwd():
+            sys.path.insert(0, os.getcwd())
+        self.previous_directory = os.getcwd()
+        self.temporary_directory = tempfile.mkdtemp()
+        os.chdir(os.path.expanduser(self.temporary_directory))
+        sys.path.insert(0, os.getcwd())
+
+    def tearDown(self) -> None:
+        super().tearDown()
+        os.chdir(self.previous_directory)
+        shutil.rmtree(self.temporary_directory)
