@@ -10,13 +10,23 @@ Usage
 Installing
 ..........
 
-Run:
+Go to some directory where local versions of Python packages may be installed. Run:
 
 .. code-block:: bash
 
    pip install -e hg+https://bitbucket.org/orenbenkiki/tgutils#egg=tgutils
 
 You might need to specify ``pip install --user ...`` if you do not have ``sudo`` privileges.
+
+.. note::
+
+    This will create a ``./src/tgutils`` directory where the actuall installation will reside. All
+    that will be installed in the Python packages directory is a link to this location. This isn't
+    even a symbolic link - it is just a text file named ``tgutils.egg-link`` containing the absolute
+    path of the real installation directory. Despite the name, there's no egg file involved. Pip
+    does leave a ``./src/pip-delete-this-directory.txt`` file, signifying this is meant to be just a
+    temporary, but in actuallity, if you remove the ``src`` directory, you will have lost the
+    installation.
 
 Importing
 .........
