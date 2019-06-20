@@ -133,3 +133,18 @@ DynaMake
 A :py:func:`tgutils.tg_require_in_parallel` function allows for collecting context for optimizing
 the use of ``qsubber`` to execute actions in parallel on our SunGrid. This is a convoluted and
 sub-optimal mechanism but has significant performance benefits in our environment.
+
+Logging
+-------
+
+The default Python logging that prints to ``stderr`` works well for a single application. However,
+when running multiple applications in parallel, log messages may get interleaved resulting in
+garbled output.
+
+This can be avoided using the :py:class:`tgutils.logging.FileLockLoggerAdapter`, which uses a file
+lock operation around each emitted log messages.
+
+If using :py:func:`tgutils.logging.qsub_logger`, then the lock file is shared with our ``qsubber``
+script, so that its log messages will not be interleaved with any application's log messages. The
+processes running on the cluster servers will not use any locking, since the output of each one is
+collected to a separate file which is only reported (atomically) when it is done.
