@@ -2,11 +2,13 @@
 Utilities for improved logging.
 """
 
+from contextlib import contextmanager
 from logging import Logger
 from logging import LoggerAdapter
 from multiprocessing import Lock
 from time import sleep
 from typing import Any
+from typing import Iterator
 
 import fcntl
 import os
@@ -37,30 +39,39 @@ class FileLockLoggerAdapter(LoggerAdapter):
         Log a message while locking the directory.
         """
         with self._lock:
-            slept = 0.0
-            while True:
-                try:
-                    fcntl.flock(self._fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
-                    break
-                except BaseException:  # pylint: disable=broad-except
-                    slept += 0.1
-                    if slept > 60:
-                        raise RuntimeError('Failed to obtain lock directory: %s '
-                                           'for more than 60 seconds'
-                                           % self._path)
-                    sleep(0.1)
-                    continue
-
-            try:
+            with lock_file(self._path, self._fd):
                 super().log(*args, **kwargs)
-            finally:
-                fcntl.flock(self._fd, fcntl.LOCK_UN)
 
 
-def qsub_logger(logger: Logger) -> Logger:
+@contextmanager
+def lock_file(lock_path: str, lock_fd: int) -> Iterator[None]:
     """
-    Wrap a logger with directory locking so that both parallel and distributed logs will not get
-    garbled.
+    Perform some action while holding a file lock.
+    """
+    slept = 0.0
+    while True:
+        try:
+            fcntl.flock(lock_fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            break
+        except BaseException:  # pylint: disable=broad-except
+            slept += 0.1
+            if slept > 60:
+                raise RuntimeError('Failed to obtain lock file: %s '
+                                   'for more than 60 seconds'
+                                   % lock_path)
+            sleep(0.1)
+            continue
+
+    try:
+        yield
+    finally:
+        fcntl.flock(lock_fd, fcntl.LOCK_UN)
+
+
+def tg_qsub_logger(logger: Logger) -> Logger:
+    """
+    Wrap a logger so that messages will not get interleaved with other program invocations and/or
+    the messages from the ``tg_qsub`` script.
     """
     if os.getenv('ENVIRONMENT') == 'BATCH':
         return logger

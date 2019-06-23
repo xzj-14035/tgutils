@@ -127,12 +127,19 @@ That is, writing ``ArrayInt32.read(path)`` will read an array of ``int32`` eleme
 specified path, and ``ArrayInt32.write(foo, path)`` will write an array of ``int32`` elements
 into the specified path.
 
-DynaMake
---------
+DynaMake and Qsubber
+--------------------
+
+The :py:mod:`tgutils.tg_qsub` script deals with submitting jobs to run on the SunGrid cluster in the
+Tanay Group lab.
 
 A :py:func:`tgutils.tg_require_in_parallel` function allows for collecting context for optimizing
-the use of ``qsubber`` to execute actions in parallel on our SunGrid. This is a convoluted and
-sub-optimal mechanism but has significant performance benefits in our environment.
+the slot allocation of ``tg_qsub`` for maximizing the cluster utilization and minimizing wait times.
+This has no effect unless the collected context values are explicitly used in the ``run_prefix``
+and/or ``run_suffix`` action wrapper of some step.
+
+This is a convoluted and sub-optimal mechanism but has significant performance benefits in the
+specific environment it was designed for.
 
 Logging
 -------
@@ -144,7 +151,7 @@ garbled output.
 This can be avoided using the :py:class:`tgutils.logging.FileLockLoggerAdapter`, which uses a file
 lock operation around each emitted log messages.
 
-If using :py:func:`tgutils.logging.qsub_logger`, then the lock file is shared with our ``qsubber``
-script, so that its log messages will not be interleaved with any application's log messages. The
-processes running on the cluster servers will not use any locking, since the output of each one is
-collected to a separate file which is only reported (atomically) when it is done.
+If using :py:func:`tgutils.logging.tg_qsub_logger`, then the lock file is shared with our
+``tg_qsub`` script, so that its log messages will not be interleaved with any application's log
+messages. The processes running on the cluster servers will not use any locking, since the output of
+each one is collected to a separate file which is only reported (atomically) when it is done.
