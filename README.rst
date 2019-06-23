@@ -155,3 +155,11 @@ If using :py:func:`tgutils.logging.tg_qsub_logger`, then the lock file is shared
 ``tg_qsub`` script, so that its log messages will not be interleaved with any application's log
 messages. The processes running on the cluster servers will not use any locking, since the output of
 each one is collected to a separate file which is only reported (atomically) when it is done.
+
+Main Function
+-------------
+
+The :py:func:`tgutils.main_utils.main_adapter` function can be used as an adapter when invoking
+either ``dynamake.application.main`` or ``dynamake.make.make``. It registers the ``tg_qsub_logger``,
+increases the maximal number of open files to the maximum, and requests ``numpy`` to raise an
+exception on an error so that such errors won't go unnoticed in our computation pipelines.
