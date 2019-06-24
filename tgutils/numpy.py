@@ -11,6 +11,8 @@ from typing import Optional
 from typing import Type
 from typing import TypeVar
 
+import os
+
 _A = TypeVar('_A', bound=ndarray)
 
 
@@ -19,23 +21,70 @@ class BaseArray(ndarray):
     Base class for all Numpy array and matrix phantom types.
     """
 
+    @staticmethod
+    def exists(path: str) -> bool:
+        """
+        Whether there exists a disk file with the specified path to load an array from.
+
+        This checks for either a ``.txt`` or a ``.npy`` suffix to allow for loading either
+        an array of strings or an array or matrix of numeric values.
+        """
+        assert not path.endswith('.npy')
+        assert not path.endswith('.txt')
+
+        return os.path.exists(path + '.npy') or os.path.exists(path + '.txt')
+
     @classmethod
     def read(cls: Type[_A], path: str, mmap_mode: Optional[str] = None) -> _A:
         """
         Read a Numpy array of the concrete type from the disk.
+
+        If a disk file with a ``.txt`` suffix exists, this will read an array of strings. Otherwise,
+        a file with a ``.npy`` suffix must exist, and this will memory map the array or matrix of
+        values contained in it.
         """
-        if not path.endswith('.npy'):
-            path += '.npy'
-        return cls.am(load(path, mmap_mode))  # type: ignore
+        return cls.am(BaseArray._read(path, mmap_mode))  # type: ignore
+
+    @staticmethod
+    def _read(path: str, mmap_mode: Optional[str] = None) -> ndarray:
+        assert not path.endswith('.npy')
+        assert not path.endswith('.txt')
+
+        text_path = path + '.txt'
+        if os.path.exists(text_path):
+            with open(text_path, 'r') as file:
+                strings = file.read().split('\n')[:-1]
+                values = array(strings, dtype='O')
+        else:
+            values = load(path + '.npy', mmap_mode)
+
+        return values
 
     @classmethod
     def write(cls, data: ndarray, path: str) -> None:
         """
         Write a Numpy array of the concrete type to the disk.
+
+        If writing an array of strings, this will create a file with a ``.txt`` suffix containing
+        one string value per line. Otherwise, the data may be an array or a matrix of numeric
+        values, which will be written to a file with a ``.npy`` format allowing for memory mapped
+        access.
         """
-        if not path.endswith('.npy'):
-            path += '.npy'
-        save(path, cls.am(data))
+        cls.am(data)
+        BaseArray._write(data, path)
+
+    @staticmethod
+    def _write(data: ndarray, path: str) -> None:
+        assert not path.endswith('.npy')
+        assert not path.endswith('.txt')
+
+        if data.dtype == 'O':
+            BaseArray._am_shape(data, 1)
+            with open(path + '.txt', 'w') as file:
+                file.write('\n'.join(data))
+                file.write('\n')
+        else:
+            save(path + '.npy', data)
 
     @classmethod
     def am(cls: Type[_A], data: ndarray) -> _A:  # pylint: disable=invalid-name
@@ -75,7 +124,7 @@ class ArrayStr(BaseArray):
     An array of Unicode strings.
     """
     dimensions = 1
-    dtype = 'U'
+    dtype = 'O'
 
 
 class MatrixStr(BaseArray):
@@ -83,7 +132,7 @@ class MatrixStr(BaseArray):
     A matrix of Unicode strings.
     """
     dimensions = 2
-    dtype = 'U'
+    dtype = 'O'
 
 
 class ArrayBool(BaseArray):

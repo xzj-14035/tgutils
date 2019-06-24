@@ -54,10 +54,13 @@ class TestNumpy(TestWithFiles):
                                      [[True, False, True], [False, True, False]])
 
     def test_array_str(self) -> None:
-        self.check_write_read_array(np.ArrayStr, 'U', ['foo', 'bar'])
+        self.check_write_read_array(np.ArrayStr, 'O', ['foo', 'bar'])
 
     def test_matrix_str(self) -> None:
-        self.check_write_read_matrix(np.MatrixStr, 'U', [['foo', 'bar', 'baz'], ['x', 'y', 'z']])
+        self.assertRaisesRegex(ValueError,
+                               'unexpected dimensions: 2 instead of: 1',
+                               self.check_write_read_matrix, np.MatrixStr, 'O',
+                               [['foo', 'bar', 'baz'], ['x', 'y', 'z']])
 
     @parameterized.expand([(np.ArrayInt8, 'int8'),
                            (np.ArrayInt16, 'int16'),  # type: ignore

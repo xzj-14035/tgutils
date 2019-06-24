@@ -14,7 +14,7 @@ import tgutils.pandas as pd
 # pylint: disable=blacklisted-name,too-few-public-methods
 
 
-class TestReadWrite(TestWithFiles):
+class TestPandas(TestWithFiles):
 
     def check_write_read_series(self, cls: type, dtype: str, data: List[Any],
                                 *, index: Any = None) -> None:
@@ -62,29 +62,10 @@ class TestReadWrite(TestWithFiles):
         self.assertEqual(read_columns, written_columns)
 
     def test_series_str(self) -> None:
-        self.check_write_read_series(pd.SeriesStr, 'U', ['foo', 'bar'])
+        self.check_write_read_series(pd.SeriesStr, 'O', ['foo', 'bar'])
 
     def test_series_str_with_index(self) -> None:
-        self.check_write_read_series(pd.SeriesStr, 'U', ['foo', 'bar'], index=['a', 'b'])
-
-    def test_frame_str(self) -> None:
-        self.check_write_read_frame(pd.FrameStr, 'U',
-                                    [['foo', 'bar', 'baz'], ['x', 'y', 'z']])
-
-    def test_frame_str_with_index(self) -> None:
-        self.check_write_read_frame(pd.FrameStr, 'U',
-                                    [['foo', 'bar', 'baz'], ['x', 'y', 'z']],
-                                    index=['a', 'b'])
-
-    def test_frame_str_with_columns(self) -> None:
-        self.check_write_read_frame(pd.FrameStr, 'U',
-                                    [['foo', 'bar', 'baz'], ['x', 'y', 'z']],
-                                    columns=['a', 'b', 'c'])
-
-    def test_frame_str_with_both(self) -> None:
-        self.check_write_read_frame(pd.FrameStr, 'U',
-                                    [['foo', 'bar', 'baz'], ['x', 'y', 'z']],
-                                    index=['a', 'b'], columns=['a', 'b', 'c'])
+        self.check_write_read_series(pd.SeriesStr, 'O', ['foo', 'bar'], index=['a', 'b'])
 
     def test_series_bool(self) -> None:
         self.check_write_read_series(pd.SeriesBool, 'bool', [True, False])
@@ -92,6 +73,21 @@ class TestReadWrite(TestWithFiles):
     def test_frame_bool(self) -> None:
         self.check_write_read_frame(pd.FrameBool, 'bool',
                                     [[True, False, True], [False, True, False]])
+
+    def test_frame_bool_with_index(self) -> None:
+        self.check_write_read_frame(pd.FrameBool, 'bool',
+                                    [[True, False, True], [False, True, False]],
+                                    index=['x', 'y'])
+
+    def test_frame_bool_with_columns(self) -> None:
+        self.check_write_read_frame(pd.FrameBool, 'bool',
+                                    [[True, False, True], [False, True, False]],
+                                    columns=['a', 'b', 'c'])
+
+    def test_frame_bool_with_both(self) -> None:
+        self.check_write_read_frame(pd.FrameBool, 'bool',
+                                    [[True, False, True], [False, True, False]],
+                                    index=['x', 'y'], columns=['a', 'b', 'c'])
 
     @parameterized.expand([(pd.SeriesInt8, 'int8'),
                            (pd.SeriesInt16, 'int16'),  # type: ignore

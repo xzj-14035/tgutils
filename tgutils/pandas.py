@@ -12,14 +12,11 @@ from typing import Optional
 from typing import Type
 from typing import TypeVar
 
-import feather  # type: ignore
-import os
-
 #: Short name for ``DataFrame``.
 Frame = DataFrame
 
-_S = TypeVar('_S', bound=Series)
-_F = TypeVar('_F', bound=Frame)
+_S = TypeVar('_S', bound='BaseSeries')
+_F = TypeVar('_F', bound='BaseFrame')
 
 
 class BaseSeries(Series):
@@ -28,25 +25,40 @@ class BaseSeries(Series):
     """
 
     @classmethod
-    def read(cls: Type[_S], path: str) -> _S:
+    def read(cls: Type[_S], path: str, mmap_mode: Optional[str] = None) -> _S:
         """
         Read a Pandas data series of the concrete type from the disk.
+
+        If an additional file with an ``.index`` suffix exists, it is loaded into the index labels.
         """
-        frame = BaseFrame._read(path)  # pylint: disable=protected-access
-        assert len(frame.columns) == 1
-        series = frame.iloc[:, 0]
-        return cls.am(series)  # type: ignore
+        assert not path.endswith('.npy')
+        assert not path.endswith('.txt')
+
+        array = BaseArray._read(path, mmap_mode)  # pylint: disable=protected-access
+        series = cls.am(Series(array))
+
+        index_path = path + '.index'
+        if BaseArray.exists(index_path):
+            index = BaseArray._read(index_path, mmap_mode)  # pylint: disable=protected-access
+            series.set_axis(index, axis=0, inplace=True)  # type: ignore
+
+        return series
 
     @classmethod
-    def write(cls, series: Series, path: str, *, name: Optional[str] = None) -> None:
+    def write(cls, series: Series, path: str) -> None:
         """
-        Write a Pandas series of the concrete type to a file.
+        Write a Pandas data series of the concrete type to a file.
 
-        This wraps the series as a column in a data frame, then writes it as if it were a normal
-        data frame.
+        If necessary, creates additional file with an ``.index`` suffix to preserve the index
+        labels.
         """
-        frame = Frame({name or series.name or 'series': cls.am(series)})
-        BaseFrame._write(frame, path)  # pylint: disable=protected-access
+        cls.am(series)
+
+        BaseArray._write(series.values, path)  # pylint: disable=protected-access
+
+        if not series.index.equals(RangeIndex(len(series.index))):
+            BaseArray._write(series.index.values,  # pylint: disable=protected-access
+                             path + '.index')
 
     @classmethod
     def am(cls: Type[_S], data: Series) -> _S:  # pylint: disable=invalid-name
@@ -87,14 +99,30 @@ class BaseFrame(Frame):
     """
 
     @classmethod
-    def read(cls: Type[_F], path: str) -> _F:
+    def read(cls: Type[_F], path: str, mmap_mode: Optional[str] = None) -> _F:
         """
         Read a Pandas data frame of the concrete type from the disk.
 
         If additional file(s) with an ``.index`` and/or ``.columns`` suffix exist, they are loaded
         into the index and/or column labels.
         """
-        return cls.am(BaseFrame._read(path))  # type: ignore  # pylint: disable=protected-access
+        assert not path.endswith('.npy')
+        assert not path.endswith('.txt')
+
+        array = BaseArray._read(path, mmap_mode)  # pylint: disable=protected-access
+        frame = cls.am(Frame(array))
+
+        index_path = path + '.index'
+        if BaseArray.exists(index_path):
+            index = BaseArray._read(index_path, mmap_mode)  # pylint: disable=protected-access
+            frame.set_axis(index, axis=0, inplace=True)  # type: ignore
+
+        columns_path = path + '.columns'
+        if BaseArray.exists(columns_path):
+            columns = BaseArray._read(columns_path, mmap_mode)  # pylint: disable=protected-access
+            frame.set_axis(columns, axis=1, inplace=True)  # type: ignore
+
+        return frame
 
     @classmethod
     def write(cls, frame: Frame, path: str) -> None:
@@ -104,43 +132,17 @@ class BaseFrame(Frame):
         If necessary, creates additional file(s) with an ``.index`` and/or ``.columns`` suffix to
         preserve the index and/or column labels.
         """
-        BaseFrame._write(cls.am(frame), path)  # pylint: disable=protected-access
+        cls.am(frame)
 
-    @staticmethod
-    def _write(frame: Frame, path: str) -> None:
-        if not path.endswith('.feather'):
-            path += '.feather'
-        with open(path, 'wb') as file:
-            feather.write_dataframe(frame, file)
+        BaseArray._write(frame.values, path)  # pylint: disable=protected-access
 
         if not frame.index.equals(RangeIndex(len(frame.index))):
-            with open(path[:-8] + '.index.feather', 'wb') as file:
-                feather.write_dataframe(Frame(dict(index=frame.index)), file)
+            BaseArray._write(frame.index.values,  # pylint: disable=protected-access
+                             path + '.index')
 
-        if not isinstance(frame.columns[0], str):
-            with open(path[:-8] + '.columns.feather', 'wb') as file:
-                feather.write_dataframe(Frame(dict(columns=frame.columns)), file)
-
-    @staticmethod
-    def _read(path: str) -> Frame:
-        if not path.endswith('.feather'):
-            path += '.feather'
-        with open(path, 'rb') as file:
-            frame = feather.read_dataframe(file)
-
-        index_path = path[:-8] + '.index.feather'
-        if os.path.exists(index_path):
-            with open(index_path, 'rb') as file:
-                index = feather.read_dataframe(file)
-            frame.set_axis(index.loc[:, 'index'].values, axis=0, inplace=True)
-
-        columns_path = path[:-8] + '.columns.feather'
-        if os.path.exists(columns_path):
-            with open(columns_path, 'rb') as file:
-                columns = feather.read_dataframe(file)
-            frame.set_axis(columns.loc[:, 'columns'].values, axis=1, inplace=True)
-
-        return frame
+        if not frame.columns.equals(RangeIndex(len(frame.columns))):
+            BaseArray._write(frame.columns.values,  # pylint: disable=protected-access
+                             path + '.columns')
 
     @classmethod
     def am(cls: Type[_F], data: Frame) -> _F:  # pylint: disable=invalid-name

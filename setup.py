@@ -178,7 +178,7 @@ class ToxCommand(SimpleCommand):
 
 
 # TODO: Replicated in tox.ini
-INSTALL_REQUIRES = ['pandas', 'numpy', 'feather-format']
+INSTALL_REQUIRES = ['pandas', 'numpy']
 TESTS_REQUIRE = ['nose', 'parameterized', 'testfixtures', 'coverage']
 DEVELOP_REQUIRES = ['autopep8', 'isort', 'mypy', 'pylint', 'sphinx', 'sphinx_rtd_theme', 'tox']
 
