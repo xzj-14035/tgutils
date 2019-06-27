@@ -6,6 +6,7 @@ from parameterized import parameterized  # type: ignore
 from tests import TestWithFiles
 from typing import Any
 from typing import List
+from typing import Type
 
 import tgutils.numpy as np
 import tgutils.pandas as pd
@@ -16,11 +17,14 @@ import tgutils.pandas as pd
 
 class TestPandas(TestWithFiles):
 
-    def check_write_read_series(self, cls: type, dtype: str, data: List[Any],
+    def check_write_read_series(self, cls: Type[pd.S], data: List[Any],
                                 *, index: Any = None) -> None:
-        written_series = cls.am(pd.Series(data, index=index, dtype=dtype))  # type:ignore
-        cls.write(written_series, 'disk_file')  # type:ignore
-        read_series = cls.read('disk_file')  # type:ignore
+        if index is None:
+            written_series = cls.be(data)
+        else:
+            written_series = cls.be(pd.Series(data, index=index))
+        cls.write(written_series, 'disk_file')
+        read_series = cls.read('disk_file')
         self.assertEqual(read_series.values.dtype, written_series.values.dtype)
 
         written_list = \
@@ -35,12 +39,14 @@ class TestPandas(TestWithFiles):
         read_index = list(read_series.index)
         self.assertEqual(read_index, written_index)
 
-    def check_write_read_frame(self, cls: type, dtype: str, data: List[List[Any]],
+    def check_write_read_frame(self, cls: Type[pd.F], data: List[List[Any]],
                                *, index: Any = None, columns: Any = None) -> None:
-        written_frame = cls.am(pd.Frame(data,  # type: ignore
-                                        index=index, columns=columns, dtype=dtype))
-        cls.write(written_frame, 'disk_file')  # type: ignore
-        read_frame = cls.read('disk_file')  # type: ignore
+        if index is None and columns is None:
+            written_frame = cls.be(data)
+        else:
+            written_frame = cls.be(pd.Frame(data, index=index, columns=columns))
+        cls.write(written_frame, 'disk_file')
+        read_frame = cls.read('disk_file')
         self.assertEqual(read_frame.values.dtype, written_frame.values.dtype)
 
         written_list = \
@@ -62,56 +68,47 @@ class TestPandas(TestWithFiles):
         self.assertEqual(read_columns, written_columns)
 
     def test_series_str(self) -> None:
-        self.check_write_read_series(pd.SeriesStr, 'O', ['foo', 'bar'])
+        self.check_write_read_series(pd.SeriesStr, ['foo', 'bar'])
 
     def test_series_str_with_index(self) -> None:
-        self.check_write_read_series(pd.SeriesStr, 'O', ['foo', 'bar'], index=['a', 'b'])
+        self.check_write_read_series(pd.SeriesStr, ['foo', 'bar'], index=['a', 'b'])
 
     def test_series_bool(self) -> None:
-        self.check_write_read_series(pd.SeriesBool, 'bool', [True, False])
+        self.check_write_read_series(pd.SeriesBool, [True, False])
 
     def test_frame_bool(self) -> None:
-        self.check_write_read_frame(pd.FrameBool, 'bool',
-                                    [[True, False, True], [False, True, False]])
+        self.check_write_read_frame(pd.FrameBool, [[True, False, True], [False, True, False]])
 
     def test_frame_bool_with_index(self) -> None:
-        self.check_write_read_frame(pd.FrameBool, 'bool',
-                                    [[True, False, True], [False, True, False]],
+        self.check_write_read_frame(pd.FrameBool, [[True, False, True], [False, True, False]],
                                     index=['x', 'y'])
 
     def test_frame_bool_with_columns(self) -> None:
-        self.check_write_read_frame(pd.FrameBool, 'bool',
-                                    [[True, False, True], [False, True, False]],
+        self.check_write_read_frame(pd.FrameBool, [[True, False, True], [False, True, False]],
                                     columns=['a', 'b', 'c'])
 
     def test_frame_bool_with_both(self) -> None:
-        self.check_write_read_frame(pd.FrameBool, 'bool',
-                                    [[True, False, True], [False, True, False]],
+        self.check_write_read_frame(pd.FrameBool, [[True, False, True], [False, True, False]],
                                     index=['x', 'y'], columns=['a', 'b', 'c'])
 
-    @parameterized.expand([(pd.SeriesInt8, 'int8'),
-                           (pd.SeriesInt16, 'int16'),  # type: ignore
-                           (pd.SeriesInt32, 'int32'),
-                           (pd.SeriesInt64, 'int64')])
-    def test_series_int(self, cls, dtype) -> None:
-        self.check_write_read_series(cls, dtype, [0, 1])
+    @parameterized.expand([(pd.SeriesInt8,),
+                           (pd.SeriesInt16,),
+                           (pd.SeriesInt32,),
+                           (pd.SeriesInt64,)])
+    def test_series_int(self, cls: Type[pd.S]) -> None:
+        self.check_write_read_series(cls, [0, 1])
 
-    @parameterized.expand([(pd.FrameInt8, 'int8'),
-                           (pd.FrameInt16, 'int16'),  # type: ignore
-                           (pd.FrameInt32, 'int32'),
-                           (pd.FrameInt64, 'int64')])
-    def test_frame_int(self, cls, dtype) -> None:
-        self.check_write_read_frame(cls, dtype, [[0, 1, 2], [3, 4, 5]])
+    @parameterized.expand([(pd.FrameInt8,), (pd.FrameInt16,), (pd.FrameInt32,), (pd.FrameInt64,)])
+    def test_frame_int(self, cls: Type[pd.F]) -> None:
+        self.check_write_read_frame(cls, [[0, 1, 2], [3, 4, 5]])
 
-    @parameterized.expand([(pd.SeriesFloat32, 'float32'),
-                           (pd.SeriesFloat64, 'float64')])  # type: ignore
-    def test_series_float(self, cls, dtype) -> None:
-        self.check_write_read_series(cls, dtype, [0.0, None])
+    @parameterized.expand([(pd.SeriesFloat32,), (pd.SeriesFloat64,)])
+    def test_series_float(self, cls: Type[pd.S]) -> None:
+        self.check_write_read_series(cls, [0.0, None])
 
-    @parameterized.expand([(pd.FrameFloat32, 'float32'),
-                           (pd.FrameFloat64, 'float64')])  # type: ignore
-    def test_frame_float(self, cls, dtype) -> None:
-        self.check_write_read_frame(cls, dtype, [[0.0, None, 2.0], [3.0, np.nan, 5.0]])
+    @parameterized.expand([(pd.FrameFloat32,), (pd.FrameFloat64,)])
+    def test_frame_float(self, cls: Type[pd.F]) -> None:
+        self.check_write_read_frame(cls, [[0.0, None, 2.0], [3.0, np.nan, 5.0]])
 
     def test_bad_series_data_type(self) -> None:
         series_float32 = pd.SeriesFloat32.am(pd.Series([0, 1], dtype='float32'))

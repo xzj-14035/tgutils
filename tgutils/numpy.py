@@ -7,13 +7,17 @@ variable using ``mypy``. It also provides some additional utilities (I/O).
 """
 
 from numpy import *  # pylint: disable=redefined-builtin,wildcard-import,unused-wildcard-import
+from typing import Any
+from typing import List
 from typing import Optional
 from typing import Type
 from typing import TypeVar
+from typing import Union
 
 import os
 
-_A = TypeVar('_A', bound=ndarray)
+#: Type variable for arrays.
+A = TypeVar('A', bound='BaseArray')  # pylint: disable=invalid-name
 
 
 class BaseArray(ndarray):
@@ -35,7 +39,7 @@ class BaseArray(ndarray):
         return os.path.exists(path + '.npy') or os.path.exists(path + '.txt')
 
     @classmethod
-    def read(cls: Type[_A], path: str, mmap_mode: Optional[str] = None) -> _A:
+    def read(cls: Type[A], path: str, mmap_mode: Optional[str] = None) -> A:
         """
         Read a Numpy array of the concrete type from the disk.
 
@@ -43,7 +47,7 @@ class BaseArray(ndarray):
         a file with a ``.npy`` suffix must exist, and this will memory map the array or matrix of
         values contained in it.
         """
-        return cls.am(BaseArray._read(path, mmap_mode))  # type: ignore
+        return cls.am(BaseArray._read(path, mmap_mode))
 
     @staticmethod
     def _read(path: str, mmap_mode: Optional[str] = None) -> ndarray:
@@ -87,7 +91,7 @@ class BaseArray(ndarray):
             save(path + '.npy', data)
 
     @classmethod
-    def am(cls: Type[_A], data: ndarray) -> _A:  # pylint: disable=invalid-name
+    def am(cls: Type[A], data: ndarray) -> A:  # pylint: disable=invalid-name
         """
         Declare an array as being of this type.
         """
@@ -98,11 +102,14 @@ class BaseArray(ndarray):
         return data  # type: ignore
 
     @classmethod
-    def be(cls: Type[_A], data: ndarray) -> _A:  # pylint: disable=invalid-name
+    def be(cls: Type[A], data: Union[ndarray, List[Any]]) -> A:  # pylint: disable=invalid-name
         """
         Convert an array to this type.
         """
+        if isinstance(data, list):
+            data = array(data, dtype=cls.dtype)
         BaseArray._am_shape(data, cls.dimensions)  # type: ignore
+        assert isinstance(data, ndarray)
         if cls.dtype not in [data.dtype.name, data.dtype.kind]:
             data = data.astype(cls.dtype)
         return data  # type: ignore
@@ -124,14 +131,6 @@ class ArrayStr(BaseArray):
     An array of Unicode strings.
     """
     dimensions = 1
-    dtype = 'O'
-
-
-class MatrixStr(BaseArray):
-    """
-    A matrix of Unicode strings.
-    """
-    dimensions = 2
     dtype = 'O'
 
 
@@ -245,3 +244,27 @@ class MatrixFloat64(BaseArray):
     """
     dimensions = 2
     dtype = 'float64'
+
+
+#: The phantom type for an array by its type name.
+ARRAY_OF_TYPE = dict(  #
+    str=ArrayStr,
+    bool=ArrayBool,
+    int8=ArrayInt8,
+    int16=ArrayInt16,
+    int32=ArrayInt32,
+    int64=ArrayInt64,
+    float32=ArrayFloat32,
+    float64=ArrayFloat64,
+)
+
+#: The phantom type for a matrix by its type name.
+MATRIX_OF_TYPE = dict(  #
+    bool=MatrixBool,
+    int8=MatrixInt8,
+    int16=MatrixInt16,
+    int32=MatrixInt32,
+    int64=MatrixInt64,
+    float32=MatrixFloat32,
+    float64=MatrixFloat64,
+)

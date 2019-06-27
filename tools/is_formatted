@@ -13,7 +13,7 @@ do
     fi
     if grep -Hn "[^=][^][\"'a-zA-Z0-9_,:)#}{.?!\\=\`]$" ${SOURCE} \
      | grep -v -- '--$' \
-     | grep -v 'from \(pandas\|numpy\) import \*$'
+     | grep -v '# pylint: disable.*wildcard-import'
     then
         STATUS=1
     fi

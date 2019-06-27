@@ -8,15 +8,23 @@ type of each variable using ``mypy``. It also provides some additional utilities
 
 from .numpy import BaseArray
 from pandas import *  # pylint: disable=redefined-builtin,wildcard-import,unused-wildcard-import
+from typing import Any
+from typing import List
 from typing import Optional
 from typing import Type
 from typing import TypeVar
+from typing import Union
+
+import numpy as np
 
 #: Short name for ``DataFrame``.
 Frame = DataFrame
 
-_S = TypeVar('_S', bound='BaseSeries')
-_F = TypeVar('_F', bound='BaseFrame')
+#: Type variable for data series.
+S = TypeVar('S', bound='BaseSeries')  # pylint: disable=invalid-name
+
+#: type variable for data frames.
+F = TypeVar('F', bound='BaseFrame')  # pylint: disable=invalid-name
 
 
 class BaseSeries(Series):
@@ -25,7 +33,7 @@ class BaseSeries(Series):
     """
 
     @classmethod
-    def read(cls: Type[_S], path: str, mmap_mode: Optional[str] = None) -> _S:
+    def read(cls: Type[S], path: str, mmap_mode: Optional[str] = None) -> S:
         """
         Read a Pandas data series of the concrete type from the disk.
 
@@ -61,7 +69,7 @@ class BaseSeries(Series):
                              path + '.index')
 
     @classmethod
-    def am(cls: Type[_S], data: Series) -> _S:  # pylint: disable=invalid-name
+    def am(cls: Type[S], data: Series) -> S:  # pylint: disable=invalid-name
         """
         Declare a data series as being of this type.
         """
@@ -73,10 +81,16 @@ class BaseSeries(Series):
         return data  # type: ignore
 
     @classmethod
-    def be(cls: Type[_S], data: Series) -> _S:  # pylint: disable=invalid-name
+    def be(cls: Type[S],  # pylint: disable=invalid-name
+           data: Union[Series, np.ndarray, List[Any]]) -> S:
         """
         Convert an array to this type.
         """
+        if isinstance(data, list):
+            data = np.array(data, dtype=cls.dtype)  # type: ignore
+        if isinstance(data, np.ndarray):
+            data = Series(data)
+
         BaseSeries._am_series(data)
         array = data.values
         if cls.dtype not in [array.dtype.name, array.dtype.kind]:  # type: ignore
@@ -99,7 +113,7 @@ class BaseFrame(Frame):
     """
 
     @classmethod
-    def read(cls: Type[_F], path: str, mmap_mode: Optional[str] = None) -> _F:
+    def read(cls: Type[F], path: str, mmap_mode: Optional[str] = None) -> F:
         """
         Read a Pandas data frame of the concrete type from the disk.
 
@@ -145,7 +159,7 @@ class BaseFrame(Frame):
                              path + '.columns')
 
     @classmethod
-    def am(cls: Type[_F], data: Frame) -> _F:  # pylint: disable=invalid-name
+    def am(cls: Type[F], data: Frame) -> F:  # pylint: disable=invalid-name
         """
         Declare a data frame as being of this type.
         """
@@ -157,10 +171,16 @@ class BaseFrame(Frame):
         return data  # type: ignore
 
     @classmethod
-    def be(cls: Type[_F], data: Frame) -> _F:  # pylint: disable=invalid-name
+    def be(cls: Type[F],  # pylint: disable=invalid-name
+           data: Union[Frame, np.ndarray, List[List[Any]]]) -> F:
         """
         Convert an array to this type.
         """
+        if isinstance(data, list):
+            data = np.array(data, dtype=cls.dtype)  # type: ignore
+        if isinstance(data, np.ndarray):
+            data = Frame(data)
+
         BaseFrame._am_frame(data)
         array = data.values
         if cls.dtype not in [array.dtype.name, array.dtype.kind]:  # type: ignore
@@ -180,13 +200,6 @@ class BaseFrame(Frame):
 class SeriesStr(BaseSeries):
     """
     A data series of Unicode strings.
-    """
-    dtype = 'O'
-
-
-class FrameStr(BaseFrame):
-    """
-    A data frame of Unicode strings.
     """
     dtype = 'O'
 
@@ -287,3 +300,27 @@ class FrameFloat64(BaseFrame):
     A data frame of 64-bit floating-point numbers.
     """
     dtype = 'float64'
+
+
+#: The phantom type for a data series by its type name.
+SERIES_OF_TYPE = dict(  #
+    str=SeriesStr,
+    bool=SeriesBool,
+    int8=SeriesInt8,
+    int16=SeriesInt16,
+    int32=SeriesInt32,
+    int64=SeriesInt64,
+    float32=SeriesFloat32,
+    float64=SeriesFloat64,
+)
+
+#: The phantom type for a data frame by its type name.
+FRAME_OF_TYPE = dict(  #
+    bool=FrameBool,
+    int8=FrameInt8,
+    int16=FrameInt16,
+    int32=FrameInt32,
+    int64=FrameInt64,
+    float32=FrameFloat32,
+    float64=FrameFloat64,
+)
