@@ -8,7 +8,7 @@ from dynamake.patterns import each_string
 from dynamake.patterns import Strings
 
 
-def tg_require_in_parallel(*paths: Strings) -> None:
+def tg_require(*paths: Strings) -> None:
     """
     Require all the specified paths with a parallel context.
 
