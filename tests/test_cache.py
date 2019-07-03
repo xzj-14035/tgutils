@@ -2,8 +2,8 @@
 Test the thread-safe cache.
 """
 
-from tests import TestCase
 from tgutils.cache import Cache
+from unittest import TestCase
 
 # pylint: disable=missing-docstring,too-many-public-methods,no-self-use
 # pylint: disable=blacklisted-name,too-few-public-methods

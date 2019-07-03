@@ -3,7 +3,7 @@ Test the Numpy utilities.
 """
 
 from parameterized import parameterized  # type: ignore
-from tests import TestWithFiles
+from tgutils.tests import TestWithFiles
 from typing import Any
 from typing import List
 from typing import Type
