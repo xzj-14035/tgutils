@@ -1,4 +1,4 @@
-""",)
+"""
 Test the Numpy utilities.
 """
 
