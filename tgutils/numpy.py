@@ -25,6 +25,12 @@ class BaseArray(ndarray):
     Base class for all Numpy array and matrix phantom types.
     """
 
+    #: The expected dimensions of an array of the (derived) class.
+    dimensions: int
+
+    #: The expected data type of an array of the (derived) class.
+    dtype: str
+
     @staticmethod
     def exists(path: str) -> bool:
         """
@@ -95,7 +101,7 @@ class BaseArray(ndarray):
         """
         Declare an array as being of this type.
         """
-        BaseArray._am_shape(data, cls.dimensions)  # type: ignore
+        BaseArray._am_shape(data, cls.dimensions)
         if cls.dtype not in [data.dtype.name, data.dtype.kind]:
             raise ValueError('unexpected data type: %s instead of: %s'
                              % (data.dtype, cls.dtype))
@@ -108,7 +114,7 @@ class BaseArray(ndarray):
         """
         if isinstance(data, list):
             data = array(data, dtype=cls.dtype)
-        BaseArray._am_shape(data, cls.dimensions)  # type: ignore
+        BaseArray._am_shape(data, cls.dimensions)
         assert isinstance(data, ndarray)
         if cls.dtype not in [data.dtype.name, data.dtype.kind]:
             data = data.astype(cls.dtype)
@@ -246,8 +252,8 @@ class MatrixFloat64(BaseArray):
     dtype = 'float64'
 
 
-#: The phantom type for an array by its type name.
-ARRAY_OF_TYPE = dict(  #
+#: The phantom type for an array by its data type name.
+ARRAY_OF_DTYPE = dict(  #
     str=ArrayStr,
     bool=ArrayBool,
     int8=ArrayInt8,
@@ -258,8 +264,8 @@ ARRAY_OF_TYPE = dict(  #
     float64=ArrayFloat64,
 )
 
-#: The phantom type for a matrix by its type name.
-MATRIX_OF_TYPE = dict(  #
+#: The phantom type for a matrix by its data type name.
+MATRIX_OF_DTYPE = dict(  #
     bool=MatrixBool,
     int8=MatrixInt8,
     int16=MatrixInt16,

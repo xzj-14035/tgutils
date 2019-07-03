@@ -32,6 +32,9 @@ class BaseSeries(Series):
     Base class for all Numpy data series phantom types.
     """
 
+    #: The expected data type of a data series of the (derived) class.
+    dtype: str
+
     @classmethod
     def read(cls: Type[S], path: str, mmap_mode: Optional[str] = None) -> S:
         """
@@ -75,9 +78,9 @@ class BaseSeries(Series):
         """
         BaseSeries._am_series(data)
         array = data.values
-        if cls.dtype not in [array.dtype.name, array.dtype.kind]:  # type: ignore
+        if cls.dtype not in [array.dtype.name, array.dtype.kind]:
             raise ValueError('unexpected data type: %s instead of: %s'
-                             % (array.dtype, cls.dtype))  # type: ignore
+                             % (array.dtype, cls.dtype))
         return data  # type: ignore
 
     @classmethod
@@ -87,14 +90,14 @@ class BaseSeries(Series):
         Convert an array to this type.
         """
         if isinstance(data, list):
-            data = np.array(data, dtype=cls.dtype)  # type: ignore
+            data = np.array(data, dtype=cls.dtype)
         if isinstance(data, np.ndarray):
             data = Series(data)
 
         BaseSeries._am_series(data)
         array = data.values
-        if cls.dtype not in [array.dtype.name, array.dtype.kind]:  # type: ignore
-            data = data.astype(cls.dtype)  # type: ignore
+        if cls.dtype not in [array.dtype.name, array.dtype.kind]:
+            data = data.astype(cls.dtype)
         return data  # type: ignore
 
     @staticmethod
@@ -111,6 +114,9 @@ class BaseFrame(Frame):
     """
     Base class for all Numpy data series phantom types.
     """
+
+    #: The expected data type of a data frame of the (derived) class.
+    dtype: str
 
     @classmethod
     def read(cls: Type[F], path: str, mmap_mode: Optional[str] = None) -> F:
@@ -165,9 +171,9 @@ class BaseFrame(Frame):
         """
         BaseFrame._am_frame(data)
         array = data.values
-        if cls.dtype not in [array.dtype.name, array.dtype.kind]:  # type: ignore
+        if cls.dtype not in [array.dtype.name, array.dtype.kind]:
             raise ValueError('unexpected data type: %s instead of: %s'
-                             % (array.dtype, cls.dtype))  # type: ignore
+                             % (array.dtype, cls.dtype))
         return data  # type: ignore
 
     @classmethod
@@ -177,14 +183,14 @@ class BaseFrame(Frame):
         Convert an array to this type.
         """
         if isinstance(data, list):
-            data = np.array(data, dtype=cls.dtype)  # type: ignore
+            data = np.array(data, dtype=cls.dtype)
         if isinstance(data, np.ndarray):
             data = Frame(data)
 
         BaseFrame._am_frame(data)
         array = data.values
-        if cls.dtype not in [array.dtype.name, array.dtype.kind]:  # type: ignore
-            data = data.astype(cls.dtype)  # type: ignore
+        if cls.dtype not in [array.dtype.name, array.dtype.kind]:
+            data = data.astype(cls.dtype)
         return data  # type: ignore
 
     @staticmethod
@@ -303,7 +309,7 @@ class FrameFloat64(BaseFrame):
 
 
 #: The phantom type for a data series by its type name.
-SERIES_OF_TYPE = dict(  #
+SERIES_OF_DTYPE = dict(  #
     str=SeriesStr,
     bool=SeriesBool,
     int8=SeriesInt8,
@@ -315,7 +321,7 @@ SERIES_OF_TYPE = dict(  #
 )
 
 #: The phantom type for a data frame by its type name.
-FRAME_OF_TYPE = dict(  #
+FRAME_OF_DTYPE = dict(  #
     bool=FrameBool,
     int8=FrameInt8,
     int16=FrameInt16,
