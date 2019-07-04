@@ -17,3 +17,5 @@ class TestCache(TestCase):
         self.assertEqual(cache.lookup('one', lambda: 1), 1)
         self.assertEqual(cache.lookup('one', lambda: 2), 1)
         self.assertTrue('one' in cache)
+        Cache.reset()
+        self.assertFalse('one' in cache)
