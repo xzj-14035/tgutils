@@ -2,6 +2,8 @@
 Common utilities for tests.
 """
 
+from dynamake.application import Prog
+from dynamake.application import reset_application
 from textwrap import dedent
 from unittest import TestCase
 
@@ -25,7 +27,14 @@ def undent(content: str) -> str:
     return content
 
 
-class TestWithFiles(TestCase):
+class TestWithReset(TestCase):
+
+    def setUp(self) -> None:
+        reset_application()
+        Prog.logger.setLevel('DEBUG')
+
+
+class TestWithFiles(TestWithReset):
 
     def setUp(self) -> None:
         super().setUp()
