@@ -32,3 +32,6 @@ class Cache(Generic[Key, Value]):  # pylint: disable=too-few-public-methods
             value = compute_value()
             self._data[key] = value
             return value
+
+    def __contains__(self, name: str) -> bool:
+        return name in self._data

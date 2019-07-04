@@ -13,5 +13,7 @@ class TestCache(TestCase):
 
     def test_lookup(self) -> None:
         cache: Cache[str, int] = Cache()
+        self.assertFalse('one' in cache)
         self.assertEqual(cache.lookup('one', lambda: 1), 1)
         self.assertEqual(cache.lookup('one', lambda: 2), 1)
+        self.assertTrue('one' in cache)
