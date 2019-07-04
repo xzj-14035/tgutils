@@ -5,6 +5,7 @@ Common utilities for tests.
 from dynamake.application import Prog
 from dynamake.application import reset_application
 from textwrap import dedent
+from tgutils.cache import Cache
 from unittest import TestCase
 
 import os
@@ -31,6 +32,7 @@ class TestWithReset(TestCase):
 
     def setUp(self) -> None:
         reset_application()
+        Cache.reset()
         Prog.logger.setLevel('DEBUG')
 
 
