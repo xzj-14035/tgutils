@@ -4,34 +4,20 @@ TGUtils - Utilities for Tanay Group lab code
 This package contains common utilities used by the Tanay Group Python lab code (for example,
 ``metacell``). These utilities are generally useful and not associated with any specific project.
 
-Usage
------
+Phantom Types
+-------------
 
-Installing
-..........
+The vanilla ``np.ndarray``, ``pd.Series`` and ``pd.DataFrame`` types are very generic. They are the
+same regardless of the element data type used, and in the case of ``np.ndarray``, the number of
+dimensions (array vs. matrix).
 
-Go to some directory where local versions of Python packages may be installed. Run:
+To understand the code, it is helpful to keep track of a more detailed data type - whether the
+variable is an array or a matrix, and what the element data type is. To facilitate this, ``tgutils``
+provides what is known as "Phantom Types". These types can be used in ``mypy`` type declarations,
+even though the actual data type of the variables remains the vanilla Numpy/Pandas data type.
 
-.. code-block:: bash
-
-   pip install -e hg+https://bitbucket.org/orenbenkiki/tgutils#egg=tgutils
-
-You might need to specify ``pip install --user ...`` if you do not have ``sudo`` privileges.
-
-.. note::
-
-    This will create a ``./src/tgutils`` directory where the actuall installation will reside. All
-    that will be installed in the Python packages directory is a link to this location. This isn't
-    even a symbolic link - it is just a text file named ``tgutils.egg-link`` containing the absolute
-    path of the real installation directory. Despite the name, there's no egg file involved. Pip
-    does leave a ``./src/pip-delete-this-directory.txt`` file, signifying this is meant to be just a
-    temporary, but in actuallity, if you remove the ``src`` directory, you will have lost the
-    installation.
-
-Importing
-.........
-
-Instead of the vanilla:
+See :py:mod:`tgutils.numpy` and :py:mod:`tgutils.pandas` for the list of provided phantom types. To
+use them, instead of the vanilla:
 
 .. code-block:: python
 
@@ -45,22 +31,8 @@ Write the modified:
     import tgutils.numpy as np
     import tgutils.pandas as pd
 
-This this will provide access to the vanilla symbols using the ``np.`` and/or ``pd.`` prefixes,
-and will also provide access to the enhanced functionality described below.
-
-Phantom Types
--------------
-
-The vanilla ``np.ndarray``, ``pd.Series`` and ``pd.DataFrame`` types are very generic. They are the
-same regardless of the element data type used, and in the case of ``np.ndarray``, the number of
-dimensions (array vs. matrix).
-
-To understand the code, it is helpful to keep track of a more detailed data type - whether the
-variable is an array or a matrix, and what the element data type is. To facilitate this, ``tgutils``
-provides what is known as "Phantom Types". These types can be used in ``mypy`` type declarations,
-even though the actual data type of the variables remains the vanilla Numpy/Pandas data type.
-
-See :py:mod:`tgutils.numpy` and :py:mod:`tgutils.pandas` for the list of provided phantom types.
+This this will provide access to the vanilla symbols using the ``np.`` and/or ``pd.`` prefixes, and
+will also provide access to the enhanced functionality described below.
 
 For example, instead of writing:
 
@@ -103,6 +75,13 @@ This will allow the reader to understand the exact data types involved. Even bet
 For example, if you by mistake write ``compute_stuff(bar, foo)`` then ``mypy`` will complain that
 the data types do not match - even though, under the covers, both ``foo`` and ``bar`` have exactly
 the same data type at run-time: ``np.ndarray``.
+
+To further help with ``mypy`` type checking, the ``tgutils`` package includes a ``stubs`` directory
+containing very partial quick-and-dirty type stubs for ``numpy`` and ``pandas`` (ideally, some brave
+soul(s) would tackle the very difficult issue of providing proper stubs for these libraries,
+allowing for the removal of the ``tgutils`` stubs). Importing :py:func:`tgutils.setup_mypy` module
+set ``MYPYPATH`` to this stubs directory, which is also a hack (see the ``metacell`` package for an
+example of using this in your ``setup.py`` file).
 
 Type Operations
 ...............

@@ -202,6 +202,7 @@ setup(name='tgutils',
       author_email='oren@ben-kiki.org',
       license='MIT',
       packages=find_packages(exclude=['tests']),
+      package_data={'tgutils': ['py.typed']},
       entry_points={'console_scripts': [
           'tg_qsub=tgutils.tg_qsub:main',
       ]},

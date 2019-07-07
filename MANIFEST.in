@@ -1,4 +1,4 @@
-include py.typed
+include tgutils/py.typed
 include tests/*.py
 include tools/*
 include tox.ini
