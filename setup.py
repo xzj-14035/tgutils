@@ -61,10 +61,10 @@ def version_from_file():
     raise RuntimeError('Failed to parse tgutils/version.py')
 
 
-def generate_version():
-    if os.path.exists('.hg'):
-        return version_from_hg()
-    return version_from_file()
+if os.path.exists('.hg'):
+    FULL_VERSION = version_from_hg()
+else:
+    FULL_VERSION = version_from_file()
 
 
 class SimpleCommand(distutils.cmd.Command):
@@ -181,7 +181,7 @@ TESTS_REQUIRE = ['nose', 'parameterized', 'testfixtures', 'coverage']
 DEVELOP_REQUIRES = ['autopep8', 'isort', 'mypy', 'pylint', 'sphinx', 'sphinx_rtd_theme', 'tox']
 
 setup(name='tgutils',
-      version=generate_version(),
+      version=FULL_VERSION,
       description='Common utilities used by the Tanay Group Python lab code.',
       long_description=readme(),
       long_description_content_type='text/x-rst',
