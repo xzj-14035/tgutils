@@ -203,6 +203,7 @@ setup(name='tgutils',
       license='MIT',
       packages=find_packages(exclude=['tests']),
       package_data={'tgutils': ['py.typed']},
+      data_files=[('', glob('stubs/**/*.py', recursive=True))],
       entry_points={'console_scripts': [
           'tg_qsub=tgutils.tg_qsub:main',
       ]},

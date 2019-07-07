@@ -1,3 +1,5 @@
+include stubs/*/*.py
+include stubs/*/*/*.py
 include tgutils/py.typed
 include tests/*.py
 include tools/*

@@ -17,6 +17,9 @@ from typing import Union
 
 import numpy as np
 
+# pylint: disable=too-many-ancestors,redefined-outer-name
+
+
 #: Short name for ``DataFrame``.
 Frame = DataFrame
 

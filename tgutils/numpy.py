@@ -16,6 +16,9 @@ from typing import Union
 
 import os
 
+# pylint: disable=redefined-outer-name
+
+
 #: Type variable for arrays.
 A = TypeVar('A', bound='BaseArray')  # pylint: disable=invalid-name
 
