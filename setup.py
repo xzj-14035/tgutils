@@ -18,7 +18,7 @@ def readme():
 
 
 def version_from_hg():
-    # TODOX subprocess.check_call(['tools/install_hg_hooks'])
+    subprocess.check_call(['tools/install_hg_hooks'])
 
     # PEP440 forbids placing the commit hash in the version number.
     # Counting the commits since the tag must therefore suffice to identify the commit.
