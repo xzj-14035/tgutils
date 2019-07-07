@@ -7,7 +7,6 @@ import distutils.log
 import os
 import re
 import subprocess
-import tgutils.setup_mypy
 
 VERSION = '0.1'
 
@@ -120,6 +119,10 @@ class MypyCommand(SimpleCommand):
                *glob('tgutils/**/*.py', recursive=True),
                *glob('tests/**/*.py', recursive=True),
                *glob('bin/**/*.py', recursive=True)]
+
+    def run(self):
+        import tgutils.setup_mypy
+        super().run()
 
 
 class NoseCommand(SimpleCommand):
