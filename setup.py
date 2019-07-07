@@ -202,7 +202,8 @@ setup(name='tgutils',
       author_email='oren@ben-kiki.org',
       license='MIT',
       packages=find_packages(exclude=['tests']),
-      package_data={'tgutils': ['py.typed'], '': glob('stubs/**/*.py', recursive=True)},
+      package_data={'tgutils': ['py.typed']
+                    + [os.path.join('..', path) for path in glob('stubs/**/*.py', recursive=True)]},
       inclide_package_data=True,
       entry_points={'console_scripts': [
           'tg_qsub=tgutils.tg_qsub:main',
