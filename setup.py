@@ -198,7 +198,11 @@ setup(name='tgutils',
       author='Oren Ben-Kiki',
       author_email='oren@ben-kiki.org',
       license='MIT',
-      packages=find_packages(exclude=['tests']),
+      packages=find_packages(exclude=['tests']) + [
+          'tgutils.numpy_stubs.numpy',
+          'tgutils.numpy_stubs.pandas',
+          'tgutils.numpy_stubs.pandas.core',
+      ],
       package_data={'tgutils': ['py.typed']},
       entry_points={'console_scripts': [
           'tg_qsub=tgutils.tg_qsub:main',
