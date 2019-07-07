@@ -10,6 +10,8 @@ from typing import Sized
 from typing import Tuple
 from typing import Union
 
+import numpy.random
+
 
 class ArrayLike(Sized, Iterable):
     def __getitem__(self, i: Any) -> Any: ...
@@ -240,6 +242,3 @@ def zeros(*args: Any, **kwargs: Any) -> ndarray: ...
 
 
 nan: float
-
-
-import numpy.random

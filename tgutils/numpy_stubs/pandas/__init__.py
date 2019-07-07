@@ -2,6 +2,7 @@
 Stubs for ``mypy`` for ``pandas``.
 """
 
+from pandas.core.window import Rolling
 from typing import Any
 from typing import Iterable
 from typing import List
@@ -10,7 +11,6 @@ from typing import Tuple
 from typing import Union
 
 import numpy as np
-from pandas.core.window import Rolling
 
 
 class Indexed(np.ArrayLike):
@@ -180,7 +180,6 @@ class GroupedSeries:
     def mean(self) -> Series: ...
 
     def sum(self) -> Series: ...
-
 
 
 class Index(np.ArrayLike):

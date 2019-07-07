@@ -2,9 +2,9 @@
 Stubs for ``mypy`` for ``numpy.random``.
 """
 
+from numpy import ndarray
 from typing import Any
 from typing import Optional
-from numpy import ndarray
 
 
 def choice(*args: Any, **kwargs: Any) -> ndarray: ...

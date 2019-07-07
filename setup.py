@@ -155,7 +155,7 @@ class PylintCommand(SimpleCommand):
                    'ungrouped-imports',
                    'wrong-import-order',
                ]),
-               *glob('tgutils/**/*.py', recursive=True),
+               *[path for path in glob('tgutils/**/*.py', recursive=True) if 'stubs' not in path],
                *glob('tests/**/*.py', recursive=True),
                *glob('bin/**/*.py', recursive=True)]
 
@@ -198,7 +198,7 @@ setup(name='tgutils',
       author='Oren Ben-Kiki',
       author_email='oren@ben-kiki.org',
       license='MIT',
-      packages=find_packages(exclude=['tests']) + ['stubs'],
+      packages=find_packages(exclude=['tests']),
       package_data={'tgutils': ['py.typed']},
       entry_points={'console_scripts': [
           'tg_qsub=tgutils.tg_qsub:main',
