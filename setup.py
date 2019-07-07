@@ -19,7 +19,7 @@ def readme():
 
 
 def version_from_hg():
-    subprocess.check_call(['tools/install_hg_hooks'])
+    # TODOX subprocess.check_call(['tools/install_hg_hooks'])
 
     # PEP440 forbids placing the commit hash in the version number.
     # Counting the commits since the tag must therefore suffice to identify the commit.
@@ -61,10 +61,10 @@ def version_from_file():
     raise RuntimeError('Failed to parse tgutils/version.py')
 
 
-if os.path.exists('.hg'):
-    FULL_VERSION = version_from_hg()
-else:
-    FULL_VERSION = version_from_file()
+def generate_version():
+    if os.path.exists('.hg'):
+        return version_from_hg()
+    return version_from_file()
 
 
 class SimpleCommand(distutils.cmd.Command):
@@ -181,7 +181,7 @@ TESTS_REQUIRE = ['nose', 'parameterized', 'testfixtures', 'coverage']
 DEVELOP_REQUIRES = ['autopep8', 'isort', 'mypy', 'pylint', 'sphinx', 'sphinx_rtd_theme', 'tox']
 
 setup(name='tgutils',
-      version=FULL_VERSION,
+      version=generate_version(),
       description='Common utilities used by the Tanay Group Python lab code.',
       long_description=readme(),
       long_description_content_type='text/x-rst',
