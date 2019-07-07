@@ -7,11 +7,9 @@ import distutils.log
 import os
 import re
 import subprocess
+import tgutils.setup_mypy
 
 VERSION = '0.1'
-
-
-os.environ['MYPYPATH'] = os.path.abspath('stubs')
 
 
 def readme():
@@ -182,7 +180,6 @@ INSTALL_REQUIRES = ['dynamake', 'pandas', 'numpy', 'pyyaml']
 TESTS_REQUIRE = ['nose', 'parameterized', 'testfixtures', 'coverage']
 DEVELOP_REQUIRES = ['autopep8', 'isort', 'mypy', 'pylint', 'sphinx', 'sphinx_rtd_theme', 'tox']
 
-
 setup(name='tgutils',
       version=generate_version(),
       description='Common utilities used by the Tanay Group Python lab code.',
@@ -201,9 +198,8 @@ setup(name='tgutils',
       author='Oren Ben-Kiki',
       author_email='oren@ben-kiki.org',
       license='MIT',
-      packages=find_packages(exclude=['tests']),
-      package_data={'tgutils': ['py.typed'], '': glob('stubs/**/*.py', recursive=True)},
-      include_package_data=True,
+      packages=find_packages(exclude=['tests']) + ['stubs'],
+      package_data={'tgutils': ['py.typed']},
       entry_points={'console_scripts': [
           'tg_qsub=tgutils.tg_qsub:main',
       ]},
