@@ -202,9 +202,9 @@ setup(name='tgutils',
       author_email='oren@ben-kiki.org',
       license='MIT',
       packages=find_packages(exclude=['tests']) + [
-          'tgutils.numpy_stubs.numpy',
-          'tgutils.numpy_stubs.pandas',
-          'tgutils.numpy_stubs.pandas.core',
+          'tgutils.poor_stubs.numpy',
+          'tgutils.poor_stubs.pandas',
+          'tgutils.poor_stubs.pandas.core',
       ],
       package_data={'tgutils': ['py.typed']},
       entry_points={'console_scripts': [

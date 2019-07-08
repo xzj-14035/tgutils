@@ -31,6 +31,13 @@ class TestNumpy(TestWithFiles):
              for value in read_array]
         self.assertEqual(read_list, written_list)
 
+        zeros = cls.am(cls.zeros(len(data)))
+        self.assertEqual(list(zeros), [0] * len(data))
+
+        empty = cls.am(cls.empty(len(data)))
+        empty[:] = 1
+        self.assertEqual(list(empty), [1] * len(data))
+
     def check_write_read_matrix(self, cls: Type[np.A], data: List[List[Any]]) -> None:
         written_matrix = cls.be(data)
         cls.write(written_matrix, 'disk_file')
@@ -46,6 +53,15 @@ class TestNumpy(TestWithFiles):
               for value in row]
              for row in read_matrix]
         self.assertEqual(read_list, written_list)
+
+        zeros: np.ndarray = cls.am(cls.zeros(read_matrix.shape))
+        self.assertEqual([list(array) for array in list(zeros)],
+                         [[0] * read_matrix.shape[1]] * read_matrix.shape[0])
+
+        empty: np.ndarray = cls.am(cls.empty(read_matrix.shape))
+        empty[:, :] = 1
+        self.assertEqual([list(array) for array in list(empty)],
+                         [[1] * read_matrix.shape[1]] * read_matrix.shape[0])
 
     def test_array_bool(self) -> None:
         self.check_write_read_array(np.ArrayBool, [True, False])

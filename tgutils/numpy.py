@@ -10,10 +10,13 @@ from numpy import *  # pylint: disable=redefined-builtin,wildcard-import,unused-
 from typing import Any
 from typing import List
 from typing import Optional
+from typing import Tuple
 from typing import Type
 from typing import TypeVar
 from typing import Union
 
+import ctypes
+import multiprocessing
 import os
 
 # pylint: disable=redefined-outer-name
@@ -21,6 +24,8 @@ import os
 
 #: Type variable for arrays.
 A = TypeVar('A', bound='BaseArray')  # pylint: disable=invalid-name
+
+_C_TYPES = dict(float32=ctypes.c_float, int32=ctypes.c_int32, float64=ctypes.c_double)
 
 
 class BaseArray(ndarray):
@@ -133,6 +138,42 @@ class BaseArray(ndarray):
         if len(data.shape) != expected_dimensions:
             raise ValueError('unexpected dimensions: %s instead of: %s'
                              % (len(data.shape), expected_dimensions))
+
+    @classmethod
+    def zeros(cls: Type[A], shape: Union[int, Tuple[int, ...]]) -> A:
+        """
+        Return an array full of zeros.
+        """
+        if isinstance(shape, tuple):
+            assert len(shape) == 2
+        return cls.am(zeros(shape, dtype=cls.dtype))
+
+    @classmethod
+    def empty(cls: Type[A], shape: Union[int, Tuple[int, ...]]) -> A:
+        """
+        Return an uninitialized array.
+        """
+        if isinstance(shape, tuple):
+            assert len(shape) == 2
+        return cls.am(empty(shape, dtype=cls.dtype))
+
+    @classmethod
+    def shared_memory_zeros(cls: Type[A], shape: Union[int, Tuple[int, ...]]) -> A:
+        """
+        Create a shared memory array, initialized to zeros.
+        """
+        if isinstance(shape, int):
+            size = shape
+            shape = (size,)
+        else:
+            assert len(shape) == 2
+            size = shape[0] * shape[1]
+
+        c_type = _C_TYPES[cls.dtype]
+
+        shared_buffer = multiprocessing.Array(c_type, size)  # type: ignore
+        shared_array = frombuffer(shared_buffer.get_obj(), dtype=cls.dtype)
+        return cls.am(reshape(shared_array, shape, order='F'))
 
 
 class ArrayStr(BaseArray):

@@ -39,7 +39,15 @@ class TestPandas(TestWithFiles):
         read_index = list(read_series.index)
         self.assertEqual(read_index, written_index)
 
-    def check_write_read_frame(self, cls: Type[pd.F], data: List[List[Any]],
+        zeros = cls.am(cls.zeros(index or len(data)))
+        self.assertEqual(list(zeros), [0] * len(data))
+
+        empty = cls.am(cls.empty(index or len(data)))
+        empty[:] = 1
+        self.assertEqual(list(empty), [1] * len(data))
+
+    def check_write_read_frame(self,  # pylint: disable=too-many-locals
+                               cls: Type[pd.F], data: List[List[Any]],
                                *, index: Any = None, columns: Any = None) -> None:
         if index is None and columns is None:
             written_frame = cls.be(data)
@@ -66,6 +74,17 @@ class TestPandas(TestWithFiles):
         written_columns = list(written_frame.columns)
         read_columns = list(read_frame.columns)
         self.assertEqual(read_columns, written_columns)
+
+        zeros = \
+            cls.am(cls.zeros(index=index or len(data), columns=columns or read_frame.columns))
+        self.assertEqual([list(array) for array in list(zeros.values)],
+                         [[0] * read_frame.shape[1]] * read_frame.shape[0])
+
+        empty = \
+            cls.am(cls.empty(index=index or read_frame.index, columns=columns or len(data[0])))
+        empty[:] = 1
+        self.assertEqual([list(array) for array in list(empty.values)],
+                         [[1] * read_frame.shape[1]] * read_frame.shape[0])
 
     def test_series_str(self) -> None:
         self.check_write_read_series(pd.SeriesStr, ['foo', 'bar'])

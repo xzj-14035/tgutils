@@ -6,4 +6,4 @@ TODO: This is a horrible hack.
 
 import os
 
-os.environ['MYPYPATH'] = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'numpy_stubs')
+os.environ['MYPYPATH'] = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'poor_stubs')

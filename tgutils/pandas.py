@@ -6,16 +6,18 @@ symbols, with the addition of strongly-typed phantom classes for tracking the ex
 type of each variable using ``mypy``. It also provides some additional utilities (I/O).
 """
 
-from .numpy import BaseArray
 from pandas import *  # pylint: disable=redefined-builtin,wildcard-import,unused-wildcard-import
 from typing import Any
+from typing import Callable
 from typing import List
 from typing import Optional
+from typing import Sized
+from typing import Tuple
 from typing import Type
 from typing import TypeVar
 from typing import Union
 
-import numpy as np
+import tgutils.numpy as np
 
 # pylint: disable=too-many-ancestors,redefined-outer-name
 
@@ -48,12 +50,12 @@ class BaseSeries(Series):
         assert not path.endswith('.npy')
         assert not path.endswith('.txt')
 
-        array = BaseArray._read(path, mmap_mode)  # pylint: disable=protected-access
+        array = np.BaseArray._read(path, mmap_mode)  # pylint: disable=protected-access
         series = cls.am(Series(array))
 
         index_path = path + '.index'
-        if BaseArray.exists(index_path):
-            index = BaseArray._read(index_path, mmap_mode)  # pylint: disable=protected-access
+        if np.BaseArray.exists(index_path):
+            index = np.BaseArray._read(index_path, mmap_mode)  # pylint: disable=protected-access
             series.set_axis(index, axis=0, inplace=True)  # type: ignore
 
         return series
@@ -68,11 +70,11 @@ class BaseSeries(Series):
         """
         cls.am(series)
 
-        BaseArray._write(series.values, path)  # pylint: disable=protected-access
+        np.BaseArray._write(series.values, path)  # pylint: disable=protected-access
 
         if not series.index.equals(RangeIndex(len(series.index))):
-            BaseArray._write(series.index.values,  # pylint: disable=protected-access
-                             path + '.index')
+            np.BaseArray._write(series.index.values,  # pylint: disable=protected-access
+                                path + '.index')
 
     @classmethod
     def am(cls: Type[S], data: Series) -> S:  # pylint: disable=invalid-name
@@ -110,7 +112,37 @@ class BaseSeries(Series):
                              % (data.__class__.__module__, data.__class__.__qualname__,
                                 Series.__module__, Series.__qualname__))
         array = data.values
-        BaseArray._am_shape(array, 1)  # pylint: disable=protected-access
+        np.BaseArray._am_shape(array, 1)  # pylint: disable=protected-access
+
+    @classmethod
+    def zeros(cls: Type[S], index: Union[int, Sized]) -> S:
+        """
+        Return a series full of zeros.
+        """
+        if isinstance(index, int):
+            return cls.am(Series(np.zeros(index, dtype=cls.dtype)))
+        return cls.am(Series(np.zeros(len(index), dtype=cls.dtype), index=index))
+
+    @classmethod
+    def empty(cls: Type[S], index: Union[int, Sized]) -> S:  # pylint: disable=arguments-differ
+        """
+        Return an uninitialized series
+        """
+        if isinstance(index, int):
+            return cls.am(Series(np.empty(index, dtype=cls.dtype)))
+        return cls.am(Series(np.empty(len(index), dtype=cls.dtype), index=index))
+
+    @classmethod
+    def shared_memory_zeros(cls: Type[S], index: Union[int, Sized]) -> S:
+        """
+        Create a shared memory series, initialized to zeros.
+        """
+        if isinstance(index, int):
+            size: int = index
+            index = None  # type: ignore
+        else:
+            size = len(index)
+        return cls.am(Series(np.ARRAY_OF_DTYPE[cls.dtype].shared_memory_zeros(size), index=index))
 
 
 class BaseFrame(Frame):
@@ -132,17 +164,18 @@ class BaseFrame(Frame):
         assert not path.endswith('.npy')
         assert not path.endswith('.txt')
 
-        array = BaseArray._read(path, mmap_mode)  # pylint: disable=protected-access
+        array = np.BaseArray._read(path, mmap_mode)  # pylint: disable=protected-access
         frame = cls.am(Frame(array))
 
         index_path = path + '.index'
-        if BaseArray.exists(index_path):
-            index = BaseArray._read(index_path, mmap_mode)  # pylint: disable=protected-access
+        if np.BaseArray.exists(index_path):
+            index = np.BaseArray._read(index_path, mmap_mode)  # pylint: disable=protected-access
             frame.set_axis(index, axis=0, inplace=True)  # type: ignore
 
         columns_path = path + '.columns'
-        if BaseArray.exists(columns_path):
-            columns = BaseArray._read(columns_path, mmap_mode)  # pylint: disable=protected-access
+        if np.BaseArray.exists(columns_path):
+            columns = np.BaseArray._read(columns_path,  # pylint: disable=protected-access
+                                         mmap_mode)
             frame.set_axis(columns, axis=1, inplace=True)  # type: ignore
 
         return frame
@@ -157,15 +190,15 @@ class BaseFrame(Frame):
         """
         cls.am(frame)
 
-        BaseArray._write(frame.values, path)  # pylint: disable=protected-access
+        np.BaseArray._write(frame.values, path)  # pylint: disable=protected-access
 
         if not frame.index.equals(RangeIndex(len(frame.index))):
-            BaseArray._write(frame.index.values,  # pylint: disable=protected-access
-                             path + '.index')
+            np.BaseArray._write(frame.index.values,  # pylint: disable=protected-access
+                                path + '.index')
 
         if not frame.columns.equals(RangeIndex(len(frame.columns))):
-            BaseArray._write(frame.columns.values,  # pylint: disable=protected-access
-                             path + '.columns')
+            np.BaseArray._write(frame.columns.values,  # pylint: disable=protected-access
+                                path + '.columns')
 
     @classmethod
     def am(cls: Type[F], data: Frame) -> F:  # pylint: disable=invalid-name
@@ -203,7 +236,51 @@ class BaseFrame(Frame):
                              % (data.__class__.__module__, data.__class__.__qualname__,
                                 Frame.__module__, Frame.__qualname__))
         array = data.values
-        BaseArray._am_shape(array, 2)  # pylint: disable=protected-access
+        np.BaseArray._am_shape(array, 2)  # pylint: disable=protected-access
+
+    @classmethod
+    def zeros(cls: Type[F], *, index: Union[int, Sized], columns: Union[int, Sized]) -> F:
+        """
+        Return a series full of zeros.
+        """
+        return cls._make(np.zeros, index=index, columns=columns)
+
+    @classmethod
+    def empty(cls: Type[F], *,  # pylint: disable=arguments-differ
+              index: Union[int, Sized], columns: Union[int, Sized]) -> F:
+        """
+        Return an uninitialized series
+        """
+        return cls._make(np.empty, index=index, columns=columns)
+
+    @classmethod
+    def shared_memory_zeros(cls: Type[F], *,
+                            index: Union[int, Sized], columns: Union[int, Sized]) -> F:
+        """
+        Create a shared memory frame, initialized to zeros.
+        """
+        def _maker(shape: Tuple[int, int]) -> np.ndarray:
+            return np.ARRAY_OF_DTYPE[cls.dtype].shared_memory_zeros(shape)
+        return cls._make(np.MATRIX_OF_DTYPE[cls.dtype].shared_memory_zeros,
+                         index=index, columns=columns)
+
+    @classmethod
+    def _make(cls: Type[F], maker: Callable, *,
+              index: Union[int, Sized], columns: Union[int, Sized]) -> F:
+        if isinstance(index, int):
+            rows_count = index
+            index = None  # type: ignore
+        else:
+            rows_count = len(index)
+
+        if isinstance(columns, int):
+            columns_count = columns
+            columns = None  # type: ignore
+        else:
+            columns_count = len(columns)
+
+        return cls.am(Frame(maker((rows_count, columns_count), dtype=cls.dtype),
+                            index=index, columns=columns))
 
 
 class SeriesStr(BaseSeries):

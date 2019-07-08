@@ -10,16 +10,16 @@ from typing import Sized
 from typing import Tuple
 from typing import Union
 
-import numpy as np
+import numpy as _np
 
 
-class Indexed(np.ArrayLike):
-    iloc: np.ArrayLike
+class Indexed(_np.ArrayLike):
+    iloc: _np.ArrayLike
     index: Index
-    loc: np.ArrayLike
+    loc: _np.ArrayLike
     name: str
     shape: Tuple[int, ...]
-    values: np.ndarray
+    values: _np.ndarray
 
 
 class DataFrame(Indexed):
@@ -182,10 +182,10 @@ class GroupedSeries:
     def sum(self) -> Series: ...
 
 
-class Index(np.ArrayLike):
+class Index(_np.ArrayLike):
     size: int
     str: Any
-    values: np.ndarray
+    values: _np.ndarray
 
     def __init__(self, *args: Any, **kwargs: Any) -> None: ...
 
