@@ -45,6 +45,15 @@ class TestPandas(TestWithFiles):
         filled = cls.am(cls.filled(1, index or len(data)))
         self.assertEqual(list(filled.values), [1] * len(data))
 
+        if cls.dtype == 'bool':
+            return
+
+        indices = cls.be(range(4))
+        self.assertEqual(list(indices.values), list(range(4)))
+
+        indices = cls.be(range(2, 4))
+        self.assertEqual(list(indices.values), list(range(2, 4)))
+
     def check_write_read_frame(self,  # pylint: disable=too-many-locals
                                cls: Type[pd.F], data: List[List[Any]],
                                *, index: Any = None, columns: Any = None) -> None:

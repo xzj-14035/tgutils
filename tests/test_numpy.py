@@ -37,6 +37,15 @@ class TestNumpy(TestWithFiles):
         filled = cls.am(cls.filled(1, len(data)))
         self.assertEqual(list(filled), [1] * len(data))
 
+        if cls.dtype == 'bool':
+            return
+
+        indices = cls.be(range(4))
+        self.assertEqual(list(indices), list(range(4)))
+
+        indices = cls.be(range(2, 4))
+        self.assertEqual(list(indices), list(range(2, 4)))
+
     def check_write_read_matrix(self, cls: Type[np.A], data: List[List[Any]]) -> None:
         written_matrix = cls.be(data)
         cls.write(written_matrix, 'disk_file')

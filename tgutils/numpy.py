@@ -116,16 +116,25 @@ class BaseArray(ndarray):
         return data  # type: ignore
 
     @classmethod
-    def be(cls: Type[A], data: Union[ndarray, List[Any]]) -> A:  # pylint: disable=invalid-name
+    def be(cls: Type[A], data: Union[range, List[Any], ndarray]) -> A:  # pylint: disable=invalid-name
         """
         Convert an array to this type.
         """
+        if isinstance(data, range):
+            if data.start == 0:
+                data = arange(data.stop, dtype=cls.dtype)
+            else:
+                data = list(data)
+
         if isinstance(data, list):
             data = array(data, dtype=cls.dtype)
-        BaseArray._am_shape(data, cls.dimensions)
+
         assert isinstance(data, ndarray)
+
+        BaseArray._am_shape(data, cls.dimensions)
         if cls.dtype not in [data.dtype.name, data.dtype.kind]:
             data = data.astype(cls.dtype)
+
         return data  # type: ignore
 
     @staticmethod
