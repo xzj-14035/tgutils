@@ -90,14 +90,16 @@ class BaseSeries(Series):
 
     @classmethod
     def be(cls: Type[S],  # pylint: disable=invalid-name
-           data: Union[Series, np.ndarray, List[Any]]) -> S:
+           data: Union[Series, np.ndarray, List[Any]], index: Optional[Sized] = None) -> S:
         """
         Convert an array to this type.
         """
         if isinstance(data, list):
             data = np.array(data, dtype=cls.dtype)
         if isinstance(data, np.ndarray):
-            data = Series(data)
+            data = Series(data, index=index)
+        else:
+            assert index is None
 
         BaseSeries._am_series(data)
         array = data.values
@@ -223,14 +225,18 @@ class BaseFrame(Frame):
 
     @classmethod
     def be(cls: Type[F],  # pylint: disable=invalid-name
-           data: Union[Frame, np.ndarray, List[List[Any]]]) -> F:
+           data: Union[Frame, np.ndarray, List[List[Any]]],
+           index: Optional[Sized] = None, columns: Optional[Sized] = None) -> F:
         """
         Convert an array to this type.
         """
         if isinstance(data, list):
             data = np.array(data, dtype=cls.dtype)
         if isinstance(data, np.ndarray):
-            data = Frame(data)
+            data = Frame(data, index=index, columns=columns)
+        else:
+            assert index is None
+            assert columns is None
 
         BaseFrame._am_frame(data)
         array = data.values
