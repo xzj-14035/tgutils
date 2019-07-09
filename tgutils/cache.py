@@ -40,8 +40,8 @@ class Cache(Generic[Key, Value]):  # pylint: disable=too-few-public-methods
             self._data[key] = value
             return value
 
-    def __contains__(self, name: str) -> bool:
-        return name in self._data
+    def __contains__(self, key: Key) -> bool:
+        return key in self._data
 
     @staticmethod
     def reset() -> None:
