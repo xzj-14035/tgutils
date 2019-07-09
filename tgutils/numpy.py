@@ -158,6 +158,18 @@ class BaseArray(ndarray):
         return cls.am(empty(shape, dtype=cls.dtype))
 
     @classmethod
+    def filled(cls: Type[A], value: Any, shape: Union[int, Tuple[int, ...]]) -> A:
+        """
+        Return an array full of some value.
+        """
+        array = cls.empty(shape)
+        if cls.dimensions == 1:
+            array[:] = value
+        else:
+            array[:, :] = value
+        return array
+
+    @classmethod
     def shared_memory_zeros(cls: Type[A], shape: Union[int, Tuple[int, ...]]) -> A:
         """
         Create a shared memory array, initialized to zeros.

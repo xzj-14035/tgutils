@@ -133,6 +133,15 @@ class BaseSeries(Series):
         return cls.am(Series(np.empty(len(index), dtype=cls.dtype), index=index))
 
     @classmethod
+    def filled(cls: Type[S], value: Any, shape: Union[int, Tuple[int, ...]]) -> S:
+        """
+        Return a series full of zeros.
+        """
+        series = cls.empty(shape)
+        series.values[:] = value
+        return series
+
+    @classmethod
     def shared_memory_zeros(cls: Type[S], index: Union[int, Sized]) -> S:
         """
         Create a shared memory series, initialized to zeros.
@@ -241,7 +250,7 @@ class BaseFrame(Frame):
     @classmethod
     def zeros(cls: Type[F], *, index: Union[int, Sized], columns: Union[int, Sized]) -> F:
         """
-        Return a series full of zeros.
+        Return a frame full of zeros.
         """
         return cls._make(np.zeros, index=index, columns=columns)
 
@@ -249,9 +258,19 @@ class BaseFrame(Frame):
     def empty(cls: Type[F], *,  # pylint: disable=arguments-differ
               index: Union[int, Sized], columns: Union[int, Sized]) -> F:
         """
-        Return an uninitialized series
+        Return an uninitialized frame
         """
         return cls._make(np.empty, index=index, columns=columns)
+
+    @classmethod
+    def filled(cls: Type[F], value: Any, *,
+               index: Union[int, Sized], columns: Union[int, Sized]) -> F:
+        """
+        Return a frame full of some value.
+        """
+        frame = cls.empty(index=index, columns=columns)
+        frame.values[:, :] = value
+        return frame
 
     @classmethod
     def shared_memory_zeros(cls: Type[F], *,

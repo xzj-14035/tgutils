@@ -34,9 +34,8 @@ class TestNumpy(TestWithFiles):
         zeros = cls.am(cls.zeros(len(data)))
         self.assertEqual(list(zeros), [0] * len(data))
 
-        empty = cls.am(cls.empty(len(data)))
-        empty[:] = 1
-        self.assertEqual(list(empty), [1] * len(data))
+        filled = cls.am(cls.filled(1, len(data)))
+        self.assertEqual(list(filled), [1] * len(data))
 
     def check_write_read_matrix(self, cls: Type[np.A], data: List[List[Any]]) -> None:
         written_matrix = cls.be(data)
@@ -58,9 +57,8 @@ class TestNumpy(TestWithFiles):
         self.assertEqual([list(array) for array in list(zeros)],
                          [[0] * read_matrix.shape[1]] * read_matrix.shape[0])
 
-        empty: np.ndarray = cls.am(cls.empty(read_matrix.shape))
-        empty[:, :] = 1
-        self.assertEqual([list(array) for array in list(empty)],
+        filled: np.ndarray = cls.am(cls.filled(1, read_matrix.shape))
+        self.assertEqual([list(array) for array in list(filled)],
                          [[1] * read_matrix.shape[1]] * read_matrix.shape[0])
 
     def test_array_bool(self) -> None:

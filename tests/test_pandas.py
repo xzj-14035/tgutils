@@ -42,9 +42,8 @@ class TestPandas(TestWithFiles):
         zeros = cls.am(cls.zeros(index or len(data)))
         self.assertEqual(list(zeros), [0] * len(data))
 
-        empty = cls.am(cls.empty(index or len(data)))
-        empty[:] = 1
-        self.assertEqual(list(empty), [1] * len(data))
+        filled = cls.am(cls.filled(1, index or len(data)))
+        self.assertEqual(list(filled.values), [1] * len(data))
 
     def check_write_read_frame(self,  # pylint: disable=too-many-locals
                                cls: Type[pd.F], data: List[List[Any]],
@@ -80,10 +79,9 @@ class TestPandas(TestWithFiles):
         self.assertEqual([list(array) for array in list(zeros.values)],
                          [[0] * read_frame.shape[1]] * read_frame.shape[0])
 
-        empty = \
-            cls.am(cls.empty(index=index or read_frame.index, columns=columns or len(data[0])))
-        empty[:] = 1
-        self.assertEqual([list(array) for array in list(empty.values)],
+        filled = \
+            cls.am(cls.filled(1, index=index or read_frame.index, columns=columns or len(data[0])))
+        self.assertEqual([list(array) for array in list(filled.values)],
                          [[1] * read_frame.shape[1]] * read_frame.shape[0])
 
     def test_series_str(self) -> None:
