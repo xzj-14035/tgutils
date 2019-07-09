@@ -138,7 +138,7 @@ class BaseSeries(Series):
         Return a series full of zeros.
         """
         series = cls.empty(shape)
-        series.values[:] = value
+        series.values.fill(value)
         return series
 
     @classmethod
@@ -269,7 +269,7 @@ class BaseFrame(Frame):
         Return a frame full of some value.
         """
         frame = cls.empty(index=index, columns=columns)
-        frame.values[:, :] = value
+        frame.values.fill(value)
         return frame
 
     @classmethod

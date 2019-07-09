@@ -163,10 +163,7 @@ class BaseArray(ndarray):
         Return an array full of some value.
         """
         array = cls.empty(shape)
-        if cls.dimensions == 1:
-            array[:] = value
-        else:
-            array[:, :] = value
+        array.fill(value)
         return array
 
     @classmethod
