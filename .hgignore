@@ -10,6 +10,7 @@ metacell/version.py
 \.mypy_cache
 \.publish_html
 __pycache__
+\.qsub
 \.reformat
 sphinx/generated
 sphinx/.*.rst

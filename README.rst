@@ -106,39 +106,90 @@ That is, writing ``ArrayInt32.read(path)`` will read an array of ``int32`` eleme
 specified path, and ``ArrayInt32.write(foo, path)`` will write an array of ``int32`` elements
 into the specified path.
 
-DynaMake and Qsubber
---------------------
+DynaMake
+--------
+
+Import ``tgutils.make`` instead of ``dynamake.make``. This will achieve the following:
+
+Using Qsub
+..........
 
 The :py:mod:`tgutils.tg_qsub` script deals with submitting jobs to run on the SunGrid cluster in the
 Tanay Group lab.
 
-A :py:func:`tgutils.tg_require_in_parallel` function allows for collecting context for optimizing
-the slot allocation of ``tg_qsub`` for maximizing the cluster utilization and minimizing wait times.
-This has no effect unless the collected context values are explicitly used in the ``run_prefix``
-and/or ``run_suffix`` action wrapper of some step.
+A :py:func:`tgutils.make.tg_require` function allows for collecting context for optimizing the slot
+allocation of ``tg_qsub`` for maximizing the cluster utilization and minimizing wait times. This has
+no effect unless the collected context values are explicitly used in the ``run_prefix`` and/or
+``run_suffix`` action wrapper of some step.
 
 This is a convoluted and sub-optimal mechanism but has significant performance benefits in the
 specific environment it was designed for.
 
+Applications
+------------
+
+Import ``tgutils.application`` instead of ``dynamake.application``. This will achieve the following:
+
+Resources
+.........
+
+By default, the Python process is restricted in the number of simultaneous open files. This
+is raised by ``tgutils`` to the maximum allowed by the operating system.
+
+Numpy Errors
+............
+
+By default, ``numpy`` ignores several kinds of numeric errors. This is modified by ``tgutils``
+to raise an appropriate exception. This increases the robustness of the results.
+
+Numpy Random Number Generation
+..............................
+
+By default, ``dynamake`` only handles the Python random number generator. This is extended by
+``tgutils`` so that the ``numpy`` random number generator is seeded with the same seeds as the
+Python random number generator, even in parallel calls. This seeding ensures results are replicable
+(when using the same non-zero seed).
+
 Logging
--------
+.......
 
 The default Python logging that prints to ``stderr`` works well for a single application. However,
 when running multiple applications in parallel, log messages may get interleaved resulting in
 garbled output.
 
-This can be avoided using the :py:class:`tgutils.logging.FileLockLoggerAdapter`, which uses a file
-lock operation around each emitted log messages.
+This is solved by ``tgutils`` using the :py:func:`tgutils.application.tg_qsub_logger`, which wraps
+the default logger with a :py:class:`tgutils.application.FileLockLoggerAdapter`. This uses a file
+lock operation around each emitted log message to ensure it is atomic. The lock file is chosen
+to be compatible with the one used by the ``tgutils.tg_qsub`` script, so that log messages
+from this script will also be protected.
 
-If using :py:func:`tgutils.logging.tg_qsub_logger`, then the lock file is shared with our
-``tg_qsub`` script, so that its log messages will not be interleaved with any application's log
-messages. The processes running on the cluster servers will not use any locking, since the output of
-each one is collected to a separate file which is only reported (atomically) when it is done.
+Parallel
+........
 
-Main Function
--------------
+When running a large number of very small tasks, it possible to let ``multiprocessing.Pool`` run
+each task on the much smaller number of available threads. However, this is less efficient. An
+alternative is to use :py:func:`tgutils.application.indexed_range` which will partition the large
+range of task indices into equal-sized sub-ranges, one per
 
-The :py:func:`tgutils.main_utils.main_adapter` function can be used as an adapter when invoking
-either ``dynamake.application.main`` or ``dynamake.make.make``. It registers the ``tg_qsub_logger``,
-increases the maximal number of open files to the maximum, and requests ``numpy`` to raise an
-exception on an error so that such errors won't go unnoticed in our computation pipelines.
+Other Utilities
+---------------
+
+Tests
+.....
+
+The provided :py:mod:`tgutils.tests` module provides :py:class:`TestWithReset` which properly
+resets all the global state for each test, and :py:class:`TestWithFiles` which also creates
+a fresh temporary directory for each test. You can create new files using
+:py:func:`tgutils.tests.write_file` and verify file contents using
+:py:meth:`tgutils.tests.TestWithFiles.expect_file`.
+
+Caching
+.......
+
+You can use the :py:class:`tgutils.cache.Cache` class for a thread-safe cache mechanism.
+
+YAML
+....
+
+You can use :py:func:`tgutils.load_yaml.load_dictionary` for a lightweight verification of loaded
+YAML data.

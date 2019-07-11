@@ -3,8 +3,8 @@ Common utilities for tests.
 """
 
 from dynamake.application import Prog
-from dynamake.application import reset_application
 from textwrap import dedent
+from tgutils.application import reset_application
 from tgutils.cache import Cache
 from unittest import TestCase
 
@@ -33,7 +33,9 @@ class TestWithReset(TestCase):
     def setUp(self) -> None:
         reset_application()
         Cache.reset()
+        Prog._is_test = True  # pylint: disable=protected-access
         Prog.logger.setLevel('DEBUG')
+        sys.argv = ['test']
 
 
 class TestWithFiles(TestWithReset):

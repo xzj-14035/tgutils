@@ -2,10 +2,8 @@
 Utilities for using DynaMake.
 """
 
-from dynamake.make import Invocation
-from dynamake.make import require
-from dynamake.patterns import each_string
-from dynamake.patterns import Strings
+from dynamake.make import *  # pylint: disable=wildcard-import,unused-wildcard-import
+from dynamake.make import reset_make as dm_reset_make
 
 
 def tg_require(*paths: Strings) -> None:
@@ -67,13 +65,14 @@ def tg_require(*paths: Strings) -> None:
         current.context['parallel_index'] = old_index
 
 
-def tg_reset() -> None:
+def reset_make() -> None:  # pylint: disable=function-redefined
     """
     Reset the persistent context (for tests).
     """
+    dm_reset_make()
     Invocation.top.context['is_parallel'] = False
     Invocation.top.context['parallel_size'] = -1
     Invocation.top.context['parallel_index'] = -1
 
 
-tg_reset()
+reset_make()

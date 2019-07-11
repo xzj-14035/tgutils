@@ -2,10 +2,10 @@
 Submit a job to qsub in the Tanay Group lab.
 """
 
-from .logging import lock_file
 from argparse import ArgumentParser
 from datetime import datetime
 from glob import glob
+from tgutils.application import lock_file
 from time import sleep
 from typing import List
 from typing import Optional
