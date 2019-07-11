@@ -15,7 +15,7 @@ from typing import Any
 from typing import Iterator
 
 import fcntl
-import numpy as np
+import numpy as _np
 import os
 import resource
 
@@ -39,7 +39,7 @@ def tgutils_adapter(args: Namespace) -> None:  # pylint: disable=unused-argument
     """
     Perform last minute adaptation of the program following parsing the command line options.
     """
-    np.seterr(all='raise')
+    _np.seterr(all='raise')
 
     (_soft, hard) = resource.getrlimit(resource.RLIMIT_NOFILE)  # pylint: disable=invalid-name
     resource.setrlimit(resource.RLIMIT_NOFILE, (hard, hard))
@@ -61,7 +61,7 @@ def reset_application() -> None:  # pylint: disable=function-redefined
 def _set_numpy_random_seed() -> None:
     random_seed = Prog.parameter_values.get('random_seed')
     if random_seed is not None:
-        np.random.seed(random_seed)
+        _np.random.seed(random_seed)
 
 
 reset_application()

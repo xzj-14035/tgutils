@@ -4,6 +4,7 @@ Utilities for using DynaMake.
 
 from dynamake.make import *  # pylint: disable=wildcard-import,unused-wildcard-import
 from dynamake.make import reset_make as dm_reset_make
+from tgutils.application import *  # pylint: disable=wildcard-import,unused-wildcard-import
 
 
 def tg_require(*paths: Strings) -> None:

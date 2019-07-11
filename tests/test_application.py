@@ -6,6 +6,8 @@ from testfixtures import OutputCapture  # type: ignore
 from tgutils.application import *  # pylint: disable=wildcard-import,unused-wildcard-import
 from tgutils.tests import TestWithReset
 
+import tgutils.numpy as np
+
 # pylint: disable=missing-docstring,too-many-public-methods,no-self-use
 
 
