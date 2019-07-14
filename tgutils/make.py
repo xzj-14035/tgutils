@@ -66,7 +66,7 @@ def tg_require(*paths: Strings) -> None:
         current.context['parallel_index'] = old_index
 
 
-def reset_make() -> None:  # pylint: disable=function-redefined
+def reset_make() -> None:  # type: ignore # pylint: disable=function-redefined
     """
     Reset the persistent context (for tests).
     """

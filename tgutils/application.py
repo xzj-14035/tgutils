@@ -20,7 +20,7 @@ import os
 import resource
 
 
-def main(parser: ArgumentParser,  # pylint: disable=function-redefined
+def main(parser: ArgumentParser,  # type: ignore # pylint: disable=function-redefined
          functions: Optional[List[str]] = None,
          *, adapter: Optional[Callable[[Namespace], None]] = None) -> None:
     """
@@ -49,7 +49,7 @@ def tgutils_adapter(args: Namespace) -> None:  # pylint: disable=unused-argument
     Prog.logger = tg_qsub_logger(Prog.logger)
 
 
-def reset_application() -> None:  # pylint: disable=function-redefined
+def reset_application() -> None:  # type: ignore # pylint: disable=function-redefined
     """
     Reset the global state (for tests).
     """
