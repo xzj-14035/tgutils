@@ -2,7 +2,6 @@
 Stubs for ``mypy`` for ``pandas``.
 """
 
-from pandas.core.window import Rolling
 from typing import Any
 from typing import Iterable
 from typing import List
@@ -11,6 +10,7 @@ from typing import Tuple
 from typing import Union
 
 import numpy as _np
+import pandas.core as core
 
 
 class Indexed(_np.ArrayLike):
@@ -172,7 +172,7 @@ class Series(Indexed):
 
     def quantile(self, *args: Any, **kwargs: Any) -> Any: ...
 
-    def rolling(self, window_size: int) -> Rolling: ...
+    def rolling(self, window_size: int) -> core.window.Rolling: ...
 
     def sort_values(self) -> Series: ...
 
