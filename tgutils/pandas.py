@@ -125,43 +125,35 @@ class BaseSeries(Series):
         np.BaseArray._am_shape(array, 1)  # pylint: disable=protected-access
 
     @classmethod
-    def zeros(cls: Type[S], index: Union[int, Sized]) -> S:
+    def zeros(cls: Type[S], index: Sized) -> S:
         """
         Return a series full of zeros.
         """
-        if isinstance(index, int):
-            return cls.am(Series(np.zeros(index, dtype=cls.dtype)))
         return cls.am(Series(np.zeros(len(index), dtype=cls.dtype), index=index))
 
     @classmethod
-    def empty(cls: Type[S], index: Union[int, Sized]) -> S:  # pylint: disable=arguments-differ
+    def empty(cls: Type[S], index: Sized) -> S:  # pylint: disable=arguments-differ
         """
         Return an uninitialized series
         """
-        if isinstance(index, int):
-            return cls.am(Series(np.empty(index, dtype=cls.dtype)))
         return cls.am(Series(np.empty(len(index), dtype=cls.dtype), index=index))
 
     @classmethod
-    def filled(cls: Type[S], value: Any, shape: Union[int, Tuple[int, ...]]) -> S:
+    def filled(cls: Type[S], value: Any, index: Sized) -> S:
         """
         Return a series full of zeros.
         """
-        series = cls.empty(shape)
+        series = cls.empty(index=index)
         series.values.fill(value)
         return series
 
     @classmethod
-    def shared_memory_zeros(cls: Type[S], index: Union[int, Sized]) -> S:
+    def shared_memory_zeros(cls: Type[S], index: Sized) -> S:
         """
         Create a shared memory series, initialized to zeros.
         """
-        if isinstance(index, int):
-            size: int = index
-            index = None  # type: ignore
-        else:
-            size = len(index)
-        return cls.am(Series(np.ARRAY_OF_DTYPE[cls.dtype].shared_memory_zeros(size), index=index))
+        return cls.am(Series(np.ARRAY_OF_DTYPE[cls.dtype].shared_memory_zeros(len(index)),
+                             index=index))
 
 
 class BaseFrame(Frame):
@@ -262,7 +254,7 @@ class BaseFrame(Frame):
         np.BaseArray._am_shape(array, 2)  # pylint: disable=protected-access
 
     @classmethod
-    def zeros(cls: Type[F], *, index: Union[int, Sized], columns: Union[int, Sized]) -> F:
+    def zeros(cls: Type[F], *, index: Sized, columns: Sized) -> F:
         """
         Return a frame full of zeros.
         """
@@ -270,15 +262,14 @@ class BaseFrame(Frame):
 
     @classmethod
     def empty(cls: Type[F], *,  # pylint: disable=arguments-differ
-              index: Union[int, Sized], columns: Union[int, Sized]) -> F:
+              index: Sized, columns: Sized) -> F:
         """
         Return an uninitialized frame
         """
         return cls._make(np.empty, index=index, columns=columns)
 
     @classmethod
-    def filled(cls: Type[F], value: Any, *,
-               index: Union[int, Sized], columns: Union[int, Sized]) -> F:
+    def filled(cls: Type[F], value: Any, *, index: Sized, columns: Sized) -> F:
         """
         Return a frame full of some value.
         """
@@ -287,8 +278,7 @@ class BaseFrame(Frame):
         return frame
 
     @classmethod
-    def shared_memory_zeros(cls: Type[F], *,
-                            index: Union[int, Sized], columns: Union[int, Sized]) -> F:
+    def shared_memory_zeros(cls: Type[F], *, index: Sized, columns: Sized) -> F:
         """
         Create a shared memory frame, initialized to zeros.
         """
@@ -298,21 +288,8 @@ class BaseFrame(Frame):
                          index=index, columns=columns)
 
     @classmethod
-    def _make(cls: Type[F], maker: Callable, *,
-              index: Union[int, Sized], columns: Union[int, Sized]) -> F:
-        if isinstance(index, int):
-            rows_count = index
-            index = None  # type: ignore
-        else:
-            rows_count = len(index)
-
-        if isinstance(columns, int):
-            columns_count = columns
-            columns = None  # type: ignore
-        else:
-            columns_count = len(columns)
-
-        return cls.am(Frame(maker((rows_count, columns_count), dtype=cls.dtype),
+    def _make(cls: Type[F], maker: Callable, *, index: Sized, columns: Sized) -> F:
+        return cls.am(Frame(maker((len(index), len(columns)), dtype=cls.dtype),
                             index=index, columns=columns))
 
 

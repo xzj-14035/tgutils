@@ -6,6 +6,8 @@ from parameterized import parameterized  # type: ignore
 from tgutils.tests import TestWithFiles
 from typing import Any
 from typing import List
+from typing import Optional
+from typing import Sized
 from typing import Type
 
 import tgutils.numpy as np
@@ -18,7 +20,7 @@ import tgutils.pandas as pd
 class TestPandas(TestWithFiles):
 
     def check_write_read_series(self, cls: Type[pd.S], data: List[Any],
-                                *, index: Any = None) -> None:
+                                *, index: Optional[Sized] = None) -> None:
         if index is None:
             written_series = cls.be(data)
         else:
@@ -39,10 +41,10 @@ class TestPandas(TestWithFiles):
         read_index = list(read_series.index)
         self.assertEqual(read_index, written_index)
 
-        zeros = cls.am(cls.zeros(index or len(data)))
+        zeros = cls.am(cls.zeros(index or range(len(data))))
         self.assertEqual(list(zeros), [0] * len(data))
 
-        filled = cls.am(cls.filled(1, index or len(data)))
+        filled = cls.am(cls.filled(1, index or range(len(data))))
         self.assertEqual(list(filled.values), [1] * len(data))
 
         if cls.dtype == 'bool':
@@ -55,8 +57,9 @@ class TestPandas(TestWithFiles):
         self.assertEqual(list(indices.values), list(range(2, 4)))
 
     def check_write_read_frame(self,  # pylint: disable=too-many-locals
-                               cls: Type[pd.F], data: List[List[Any]],
-                               *, index: Any = None, columns: Any = None) -> None:
+                               cls: Type[pd.F], data: List[List[Any]], *,
+                               index: Optional[Sized] = None,
+                               columns: Optional[Sized] = None) -> None:
         if index is None and columns is None:
             written_frame = cls.be(data)
         else:
@@ -84,12 +87,14 @@ class TestPandas(TestWithFiles):
         self.assertEqual(read_columns, written_columns)
 
         zeros = \
-            cls.am(cls.zeros(index=index or len(data), columns=columns or read_frame.columns))
+            cls.am(cls.zeros(index=index or range(len(data)),
+                             columns=columns or read_frame.columns))
         self.assertEqual([list(array) for array in list(zeros.values)],
                          [[0] * read_frame.shape[1]] * read_frame.shape[0])
 
         filled = \
-            cls.am(cls.filled(1, index=index or read_frame.index, columns=columns or len(data[0])))
+            cls.am(cls.filled(1, index=index or read_frame.index,
+                              columns=columns or range(len(data[0]))))
         self.assertEqual([list(array) for array in list(filled.values)],
                          [[1] * read_frame.shape[1]] * read_frame.shape[0])
 
