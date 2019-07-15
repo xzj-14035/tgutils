@@ -147,3 +147,46 @@ def tg_qsub_logger(logger: Logger) -> Logger:
     return FileLockLoggerAdapter(logger,  # type: ignore
                                  os.path.join(os.getenv('QSUB_TMP_DIR', '.qsub'),
                                               'lock'))
+
+
+class ParallelCounter:  # pylint: disable=too-few-public-methods
+    """
+    A counter for logging a parallel loop.
+    """
+
+    def __init__(self, *, name: str, progress: str, log_every: int, log_with: int) -> None:
+        #: The name of the overall loop.
+        self.name = name
+
+        #: The format of the progress message.
+        self.progress = progress
+
+        #: Emit a log message every this amount of iterations.
+        self.log_every = log_every
+
+        #: The value in the log message is divided by this amount (typically a power of 1000).
+        self.log_with = log_with
+
+        #: The shared memory iteration counter.
+        self.shared_counter = Value(ctypes.c_int32)  # type: ignore
+
+        #: The counter of the iterations in the local proress.
+        self.local_counter = 0
+
+        Prog.logger.info('%s...', name)
+
+    def increment(self) -> None:
+        """
+        Indicate an iteration has completed.
+        """
+        self.local_counter += 1
+        if self.local_counter % 100 != 0:
+            return
+
+        with self.shared_counter.get_lock():
+            self.shared_counter.value += self.local_counter
+            self.local_counter = 0
+            total = self.shared_counter.value
+
+        if total % self.log_every == 0:
+            Prog.logger.info(self.progress, total // self.log_with)

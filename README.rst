@@ -169,7 +169,8 @@ Parallel
 When running a large number of very small tasks, it possible to let ``multiprocessing.Pool`` run
 each task on the much smaller number of available threads. However, this is less efficient. An
 alternative is to use :py:func:`tgutils.application.indexed_range` which will partition the large
-range of task indices into equal-sized sub-ranges, one per
+range of task indices into equal-sized sub-ranges, one per process. Reporting progress can be
+done using the :py:class:`tgutils.application.ParallelCounter` class.
 
 Other Utilities
 ---------------
@@ -186,7 +187,8 @@ a fresh temporary directory for each test. You can create new files using
 Caching
 .......
 
-You can use the :py:class:`tgutils.cache.Cache` class for a thread-safe cache mechanism.
+You can use the :py:class:`tgutils.cache.Cache` class for a lightweight generic cache mechanism.
+It uses weak references to hold onto expensive-to-compute data.
 
 YAML
 ....
