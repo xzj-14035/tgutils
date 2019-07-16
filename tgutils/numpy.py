@@ -78,6 +78,24 @@ class BaseArray(ndarray):
 
         return values
 
+    @staticmethod
+    def read_array(path: str, mmap_mode: Optional[str] = None) -> ndarray:
+        """
+        Read a 1D array of any type from the disk.
+        """
+        array = BaseArray._read(path, mmap_mode)
+        BaseArray._am_shape(array, 1)
+        return array
+
+    @staticmethod
+    def read_matrix(path: str, mmap_mode: Optional[str] = None) -> ndarray:
+        """
+        Read a 2D array of any type from the disk.
+        """
+        array = BaseArray._read(path, mmap_mode)
+        BaseArray._am_shape(array, 2)
+        return array
+
     @classmethod
     def write(cls, data: ndarray, path: str) -> None:
         """

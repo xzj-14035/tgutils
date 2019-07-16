@@ -20,15 +20,13 @@ class TestApplication(TestWithReset):
         self.assertEqual(indexed_range(1, invocations=2, size=5), range(2, 5))
 
     def test_random_seed(self) -> None:
-        use_random_seed()
-
-        @config(top=True)
+        @config(top=True, random=True)
         def top() -> None:  # pylint: disable=unused-variable
             print(np.random.random())
 
         np.random.seed(11)
 
-        sys.argv += ['--random_seed', '17', 'top']
+        sys.argv += ['top', '--random_seed', '17']
         with OutputCapture() as output:
             main(ArgumentParser(description='Test'))
 
@@ -36,8 +34,7 @@ class TestApplication(TestWithReset):
         output.compare('%s\n' % np.random.random())
 
     def test_random_parallel(self) -> None:
-        use_random_seed()
-
+        @config(random=True)
         def _roll() -> float:
             return np.random.random()
 
@@ -48,7 +45,7 @@ class TestApplication(TestWithReset):
 
         np.random.seed(11)
 
-        sys.argv += ['--random_seed', '17', 'top']
+        sys.argv += ['top', '--random_seed', '17']
         with OutputCapture() as output:
             main(ArgumentParser(description='Test'))
 

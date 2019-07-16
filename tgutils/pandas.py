@@ -50,12 +50,15 @@ class BaseSeries(Series):
         assert not path.endswith('.npy')
         assert not path.endswith('.txt')
 
-        array = np.BaseArray._read(path, mmap_mode)  # pylint: disable=protected-access
-        series = cls.am(Series(array))
+        array = np.BaseArray.read_array(path, mmap_mode)
+        if cls != BaseSeries:
+            series = cls.am(Series(array))
+        else:
+            series = Series(array)  # type: ignore
 
         index_path = path + '.index'
         if np.BaseArray.exists(index_path):
-            index = np.BaseArray._read(index_path, mmap_mode)  # pylint: disable=protected-access
+            index = np.BaseArray.read_array(index_path, mmap_mode)
             series.set_axis(index, axis=0, inplace=True)  # type: ignore
 
         return series
@@ -175,18 +178,20 @@ class BaseFrame(Frame):
         assert not path.endswith('.npy')
         assert not path.endswith('.txt')
 
-        array = np.BaseArray._read(path, mmap_mode)  # pylint: disable=protected-access
-        frame = cls.am(Frame(array))
+        array = np.BaseArray.read_matrix(path, mmap_mode)
+        if cls != BaseFrame:
+            frame = cls.am(Frame(array))
+        else:
+            frame = Frame(array)  # type: ignore
 
         index_path = path + '.index'
         if np.BaseArray.exists(index_path):
-            index = np.BaseArray._read(index_path, mmap_mode)  # pylint: disable=protected-access
+            index = np.BaseArray.read_array(index_path, mmap_mode)
             frame.set_axis(index, axis=0, inplace=True)  # type: ignore
 
         columns_path = path + '.columns'
         if np.BaseArray.exists(columns_path):
-            columns = np.BaseArray._read(columns_path,  # pylint: disable=protected-access
-                                         mmap_mode)
+            columns = np.BaseArray.read_array(columns_path, mmap_mode)
             frame.set_axis(columns, axis=1, inplace=True)  # type: ignore
 
         return frame
@@ -282,14 +287,13 @@ class BaseFrame(Frame):
         """
         Create a shared memory frame, initialized to zeros.
         """
-        def _maker(shape: Tuple[int, int]) -> np.ndarray:
-            return np.ARRAY_OF_DTYPE[cls.dtype].shared_memory_zeros(shape)
-        return cls._make(np.MATRIX_OF_DTYPE[cls.dtype].shared_memory_zeros,
-                         index=index, columns=columns)
+        def _matrix_maker(shape: Tuple[int, int], dtype: str) -> np.ndarray:
+            return np.MATRIX_OF_DTYPE[dtype].shared_memory_zeros(shape)
+        return cls._make(_matrix_maker, index=index, columns=columns)
 
     @classmethod
-    def _make(cls: Type[F], maker: Callable, *, index: Sized, columns: Sized) -> F:
-        return cls.am(Frame(maker((len(index), len(columns)), dtype=cls.dtype),
+    def _make(cls: Type[F], matrix_maker: Callable, *, index: Sized, columns: Sized) -> F:
+        return cls.am(Frame(matrix_maker((len(index), len(columns)), dtype=cls.dtype),
                             index=index, columns=columns))
 
 
