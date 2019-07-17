@@ -177,6 +177,9 @@ class Loop:  # pylint: disable=too-many-instance-attributes
         #: The counter of the iterations in the local proress.
         self.local_counter = 0
 
+        #: Granularity of parallel counting.
+        self.local_every = self.log_every // 10
+
         #: The expected number of increments.
         self.expected = expected
 
@@ -198,7 +201,7 @@ class Loop:  # pylint: disable=too-many-instance-attributes
         code.
         """
         self.local_counter += 1
-        if self.local_counter % 100 != 0:
+        if self.local_every > 0 and self.local_counter % self.local_every != 0:
             return
 
         with self.shared_counter.get_lock():
