@@ -203,7 +203,7 @@ class BaseArray(ndarray):
             shape = (size,)
         else:
             assert len(shape) == 2
-            size = shape[0] * shape[1]
+            size = int(shape[0] * shape[1])
 
         c_type = _C_TYPES[cls.dtype]
 

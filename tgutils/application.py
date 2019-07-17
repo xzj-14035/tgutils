@@ -149,23 +149,27 @@ def tg_qsub_logger(logger: Logger) -> Logger:
                                               'lock'))
 
 
-class ParallelCounter:  # pylint: disable=too-few-public-methods
+class Loop:  # pylint: disable=too-many-instance-attributes
     """
-    A counter for logging a parallel loop.
+    Log progress for a (possibly parallel) loop.
     """
 
-    def __init__(self, *, name: str, progress: str, log_every: int, log_with: int) -> None:
-        #: The name of the overall loop.
-        self.name = name
+    def __init__(self, *, start: str, progress: str, completed: str, log_every: int = 1,
+                 log_with: Optional[int] = None, expected: Optional[int] = None) -> None:
+        #: The format of the start message.
+        self.start = start
 
         #: The format of the progress message.
         self.progress = progress
 
-        #: Emit a log message every this amount of iterations.
+        #: The format of the completion messages.
+        self.completed = completed
+
+        #: Emit a log message every this amount of iterations (typically a power of 10).
         self.log_every = log_every
 
         #: The value in the log message is divided by this amount (typically a power of 1000).
-        self.log_with = log_with
+        self.log_with = log_with or log_every
 
         #: The shared memory iteration counter.
         self.shared_counter = Value(ctypes.c_int32)  # type: ignore
@@ -173,11 +177,25 @@ class ParallelCounter:  # pylint: disable=too-few-public-methods
         #: The counter of the iterations in the local proress.
         self.local_counter = 0
 
-        Prog.logger.info('%s...', name)
+        #: The expected number of increments.
+        self.expected = expected
 
-    def increment(self) -> None:
+        if self.expected is None or self.expected >= self.log_every:
+            Prog.logger.info(self.start)
+
+    def __enter__(self) -> 'Loop':
+        return self
+
+    def __exit__(self, _type: Any, _value: Any, _traceback: Any) -> None:
+        self.done()
+
+    def step(self) -> None:
         """
-        Indicate an iteration has completed.
+        Indicate a loop iteration.
+
+        Ideally is called at the end of the iteration to indicate the iteration has completed. If
+        the loop code is complex (contains ``continue`` etc.) then it is placed at the start of the
+        code.
         """
         self.local_counter += 1
         if self.local_counter % 100 != 0:
@@ -188,5 +206,18 @@ class ParallelCounter:  # pylint: disable=too-few-public-methods
             self.local_counter = 0
             total = self.shared_counter.value
 
-        if total % self.log_every == 0:
+        if total % self.log_every > 0:
+            return
+
+        if self.expected is None:
             Prog.logger.info(self.progress, total // self.log_with)
+        else:
+            Prog.logger.info(self.progress, total // self.log_with, (100 * total / self.expected))
+
+    def done(self) -> None:
+        """
+        Indicate the loop has completed.
+        """
+        total = self.shared_counter.value
+        if total >= self.log_every:
+            Prog.logger.info(self.completed, total)
