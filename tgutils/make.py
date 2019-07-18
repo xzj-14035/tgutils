@@ -66,6 +66,28 @@ def tg_require(*paths: Strings) -> None:
         current.context['parallel_index'] = old_index
 
 
+def parallel_jobs() -> int:
+    """
+    Return the number of jobs to use for a parallel sub-process in the current context (can be
+    passed to ``--jobs``).
+
+    This assumes all the actions of the innermost ``tg_require`` in the current context are
+    executed, and tries to utilize all the available CPUs for them.
+    """
+    current = Invocation.current
+    is_parallel = current.context.get('is_parallel', False)
+    if not is_parallel:
+        return 0
+
+    jobs = Resources.total['jobs']
+    size = current.context['parallel_size']
+    if size > jobs:
+        return 1
+
+    index = current.context['parallel_index']
+    return int(((index + 1) / size) * jobs) - int((index / size) * jobs)
+
+
 def reset_make() -> None:  # type: ignore # pylint: disable=function-redefined
     """
     Reset the persistent context (for tests).
