@@ -93,24 +93,14 @@ class BaseSeries(Series):
 
     @classmethod
     def be(cls: Type[S],  # pylint: disable=invalid-name
-           data: Union[range, List[Any], np.ndarray, Series], index: Optional[Sized] = None) -> S:
+           data: Sized, index: Optional[Sized] = None) -> S:
         """
         Convert an array to this type.
         """
-        if isinstance(data, range):
-            if data.start == 0:
-                data = np.arange(data.stop, dtype=cls.dtype)
-            else:
-                data = list(data)
-
-        if isinstance(data, list):
-            data = np.array(data, dtype=cls.dtype)
-
-        if isinstance(data, np.ndarray):
+        if not isinstance(data, Series):
+            if not isinstance(data, np.ndarray):
+                data = np.array(data, dtype=cls.dtype)
             data = Series(data, index=index)
-        else:
-            assert index is None
-            assert isinstance(data, Series)
 
         BaseSeries._am_series(data)
         if cls.dtype not in [data.values.dtype.name, data.values.dtype.kind]:

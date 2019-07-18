@@ -8,8 +8,8 @@ variable using ``mypy``. It also provides some additional utilities (I/O).
 
 from numpy import *  # pylint: disable=redefined-builtin,wildcard-import,unused-wildcard-import
 from typing import Any
-from typing import List
 from typing import Optional
+from typing import Sized
 from typing import Tuple
 from typing import Type
 from typing import TypeVar
@@ -134,20 +134,12 @@ class BaseArray(ndarray):
         return data  # type: ignore
 
     @classmethod
-    def be(cls: Type[A], data: Union[range, List[Any], ndarray]) -> A:  # pylint: disable=invalid-name
+    def be(cls: Type[A], data: Sized) -> A:  # pylint: disable=invalid-name
         """
         Convert an array to this type.
         """
-        if isinstance(data, range):
-            if data.start == 0:
-                data = arange(data.stop, dtype=cls.dtype)
-            else:
-                data = list(data)
-
-        if isinstance(data, list):
+        if not isinstance(data, ndarray):
             data = array(data, dtype=cls.dtype)
-
-        assert isinstance(data, ndarray)
 
         BaseArray._am_shape(data, cls.dimensions)
         if cls.dtype not in [data.dtype.name, data.dtype.kind]:
