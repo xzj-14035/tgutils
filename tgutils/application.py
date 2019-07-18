@@ -222,5 +222,5 @@ class Loop:  # pylint: disable=too-many-instance-attributes
         Indicate the loop has completed.
         """
         total = self.shared_counter.value
-        if total >= self.log_every:
+        if total >= self.log_every or self.expected is None or self.expected >= self.log_every:
             Prog.logger.info(self.completed, total)
