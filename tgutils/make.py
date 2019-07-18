@@ -80,6 +80,9 @@ def parallel_jobs() -> int:
         return 0
 
     jobs = Resources.total['jobs']
+    if jobs == 0:
+        return 0
+
     size = current.context['parallel_size']
     if size > jobs:
         return 1
