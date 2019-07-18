@@ -174,9 +174,6 @@ class Loop:  # pylint: disable=too-many-instance-attributes
         #: The shared memory iteration counter.
         self.shared_counter = Value(ctypes.c_int32)  # type: ignore
 
-        #: The counter of the iterations in the local proress.
-        self.local_counter = 0
-
         #: Granularity of parallel counting.
         self.local_every = self.log_every // 10
 
@@ -200,13 +197,8 @@ class Loop:  # pylint: disable=too-many-instance-attributes
         the loop code is complex (contains ``continue`` etc.) then it is placed at the start of the
         code.
         """
-        self.local_counter += 1
-        if self.local_every > 0 and self.local_counter % self.local_every != 0:
-            return
-
         with self.shared_counter.get_lock():
-            self.shared_counter.value += self.local_counter
-            self.local_counter = 0
+            self.shared_counter.value += 1
             total = self.shared_counter.value
 
         if total % self.log_every > 0:
