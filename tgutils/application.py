@@ -71,13 +71,13 @@ def indexed_range(index: int, *, size: int, invocations: int = 0) -> range:
     """
     Return a range of indices for an indexed invocation.
 
-    Each invocation will get its own range, where the range sizes will be the same (as much as
-    possible) for each invocation.
+    Each invocation ``index`` will get its own range, where the range sizes will be the same (as
+    much as possible) for each invocation.
 
-    If the number of invocations is zero, it is assumed to be the number of available parallel
-    processes, that is, that there will be one invocation per parallel process.
+    If the number of ``invocations`` is zero, it is assumed to be the number of available parallel
+    processes, that is, that there will be one invocation per parallel process (at most ``size``).
     """
-    invocations = invocations or min(processes(), size)
+    invocations = invocations or processes_for(size)
     start = int(round(index * size / invocations))
     stop = int(round((index + 1) * size / invocations))
     return range(start, stop)
