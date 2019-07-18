@@ -8,8 +8,8 @@ variable using ``mypy``. It also provides some additional utilities (I/O).
 
 from numpy import *  # pylint: disable=redefined-builtin,wildcard-import,unused-wildcard-import
 from typing import Any
+from typing import Collection
 from typing import Optional
-from typing import Sized
 from typing import Tuple
 from typing import Type
 from typing import TypeVar
@@ -134,7 +134,7 @@ class BaseArray(ndarray):
         return data  # type: ignore
 
     @classmethod
-    def be(cls: Type[A], data: Sized) -> A:  # pylint: disable=invalid-name
+    def be(cls: Type[A], data: Collection) -> A:  # pylint: disable=invalid-name
         """
         Convert an array to this type.
         """

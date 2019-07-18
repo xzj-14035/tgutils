@@ -6,14 +6,15 @@ from typing import Any
 from typing import Iterable
 from typing import Iterator
 from typing import List
-from typing import Sized
 from typing import Tuple
 from typing import Union
 
 import numpy.random as random
 
 
-class ArrayLike(Sized, Iterable):
+class ArrayLike:
+    def __contains__(self, v: Any) -> bool: ...
+
     def __getitem__(self, i: Any) -> Any: ...
 
     def __len__(self) -> int: ...

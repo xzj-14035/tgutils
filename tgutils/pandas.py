@@ -9,9 +9,9 @@ type of each variable using ``mypy``. It also provides some additional utilities
 from pandas import *  # pylint: disable=redefined-builtin,wildcard-import,unused-wildcard-import
 from typing import Any
 from typing import Callable
+from typing import Collection
 from typing import List
 from typing import Optional
-from typing import Sized
 from typing import Tuple
 from typing import Type
 from typing import TypeVar
@@ -93,7 +93,7 @@ class BaseSeries(Series):
 
     @classmethod
     def be(cls: Type[S],  # pylint: disable=invalid-name
-           data: Sized, index: Optional[Sized] = None) -> S:
+           data: Collection, index: Optional[Collection] = None) -> S:
         """
         Convert an array to this type.
         """
@@ -118,21 +118,21 @@ class BaseSeries(Series):
         np.BaseArray._am_shape(array, 1)  # pylint: disable=protected-access
 
     @classmethod
-    def zeros(cls: Type[S], index: Sized) -> S:
+    def zeros(cls: Type[S], index: Collection) -> S:
         """
         Return a series full of zeros.
         """
         return cls.am(Series(np.zeros(len(index), dtype=cls.dtype), index=index))
 
     @classmethod
-    def empty(cls: Type[S], index: Sized) -> S:  # pylint: disable=arguments-differ
+    def empty(cls: Type[S], index: Collection) -> S:  # pylint: disable=arguments-differ
         """
         Return an uninitialized series
         """
         return cls.am(Series(np.empty(len(index), dtype=cls.dtype), index=index))
 
     @classmethod
-    def filled(cls: Type[S], value: Any, index: Sized) -> S:
+    def filled(cls: Type[S], value: Any, index: Collection) -> S:
         """
         Return a series full of zeros.
         """
@@ -141,7 +141,7 @@ class BaseSeries(Series):
         return series
 
     @classmethod
-    def shared_memory_zeros(cls: Type[S], index: Sized) -> S:
+    def shared_memory_zeros(cls: Type[S], index: Collection) -> S:
         """
         Create a shared memory series, initialized to zeros.
         """
@@ -221,7 +221,7 @@ class BaseFrame(Frame):
     @classmethod
     def be(cls: Type[F],  # pylint: disable=invalid-name
            data: Union[Frame, np.ndarray, List[List[Any]]],
-           index: Optional[Sized] = None, columns: Optional[Sized] = None) -> F:
+           index: Optional[Collection] = None, columns: Optional[Collection] = None) -> F:
         """
         Convert an array to this type.
         """
@@ -249,7 +249,7 @@ class BaseFrame(Frame):
         np.BaseArray._am_shape(array, 2)  # pylint: disable=protected-access
 
     @classmethod
-    def zeros(cls: Type[F], *, index: Sized, columns: Sized) -> F:
+    def zeros(cls: Type[F], *, index: Collection, columns: Collection) -> F:
         """
         Return a frame full of zeros.
         """
@@ -257,14 +257,14 @@ class BaseFrame(Frame):
 
     @classmethod
     def empty(cls: Type[F], *,  # pylint: disable=arguments-differ
-              index: Sized, columns: Sized) -> F:
+              index: Collection, columns: Collection) -> F:
         """
         Return an uninitialized frame
         """
         return cls._make(np.empty, index=index, columns=columns)
 
     @classmethod
-    def filled(cls: Type[F], value: Any, *, index: Sized, columns: Sized) -> F:
+    def filled(cls: Type[F], value: Any, *, index: Collection, columns: Collection) -> F:
         """
         Return a frame full of some value.
         """
@@ -273,7 +273,7 @@ class BaseFrame(Frame):
         return frame
 
     @classmethod
-    def shared_memory_zeros(cls: Type[F], *, index: Sized, columns: Sized) -> F:
+    def shared_memory_zeros(cls: Type[F], *, index: Collection, columns: Collection) -> F:
         """
         Create a shared memory frame, initialized to zeros.
         """
@@ -282,7 +282,7 @@ class BaseFrame(Frame):
         return cls._make(_matrix_maker, index=index, columns=columns)
 
     @classmethod
-    def _make(cls: Type[F], matrix_maker: Callable, *, index: Sized, columns: Sized) -> F:
+    def _make(cls: Type[F], matrix_maker: Callable, *, index: Collection, columns: Collection) -> F:
         return cls.am(Frame(matrix_maker((len(index), len(columns)), dtype=cls.dtype),
                             index=index, columns=columns))
 

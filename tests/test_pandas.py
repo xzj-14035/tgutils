@@ -5,9 +5,9 @@ Test the Pandas utilities.
 from parameterized import parameterized  # type: ignore
 from tgutils.tests import TestWithFiles
 from typing import Any
+from typing import Collection
 from typing import List
 from typing import Optional
-from typing import Sized
 from typing import Type
 
 import tgutils.numpy as np
@@ -20,7 +20,7 @@ import tgutils.pandas as pd
 class TestPandas(TestWithFiles):
 
     def check_write_read_series(self, cls: Type[pd.S], data: List[Any],
-                                *, index: Optional[Sized] = None) -> None:
+                                *, index: Optional[Collection] = None) -> None:
         if index is None:
             written_series = cls.be(data)
         else:
@@ -58,8 +58,8 @@ class TestPandas(TestWithFiles):
 
     def check_write_read_frame(self,  # pylint: disable=too-many-locals
                                cls: Type[pd.F], data: List[List[Any]], *,
-                               index: Optional[Sized] = None,
-                               columns: Optional[Sized] = None) -> None:
+                               index: Optional[Collection] = None,
+                               columns: Optional[Collection] = None) -> None:
         if index is None and columns is None:
             written_frame = cls.be(data)
         else:
