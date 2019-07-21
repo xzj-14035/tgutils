@@ -157,6 +157,10 @@ class BaseFrame(Frame):
     #: The expected data type of a data frame of the (derived) class.
     dtype: str
 
+    @property
+    def _constructor_expanddim(self) -> Any:
+        assert False
+
     @classmethod
     def read(cls: Type[F], path: str, mmap_mode: Optional[str] = None) -> F:
         """
