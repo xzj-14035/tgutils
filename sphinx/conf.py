@@ -25,7 +25,7 @@ subprocess.check_call('../tools/prepare_for_sphinx')
 # -- Project information -----------------------------------------------------
 
 project = 'TGUtils'
-copyright = '2018, Weizmann Institute of Science'
+copyright = '2018-2019, Weizmann Institute of Science'
 author = 'Oren Ben-Kiki'
 
 version = tgutils.version.__version__
