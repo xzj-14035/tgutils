@@ -62,6 +62,7 @@ def _set_numpy_random_seed() -> None:
     random_seed = Prog.parameter_values.get('random_seed')
     if random_seed is not None:
         _np.random.seed(random_seed)
+        Prog.logger.debug('Using numpy random seed: %s', random_seed)
 
 
 reset_application()
@@ -189,7 +190,7 @@ class Loop:  # pylint: disable=too-many-instance-attributes
     def __exit__(self, _type: Any, _value: Any, _traceback: Any) -> None:
         self.done()
 
-    def step(self) -> None:
+    def step(self, fraction: Optional[float] = None) -> None:
         """
         Indicate a loop iteration.
 
@@ -204,10 +205,13 @@ class Loop:  # pylint: disable=too-many-instance-attributes
         if total % self.log_every > 0:
             return
 
-        if self.expected is None:
+        if fraction is None and self.expected is not None:
+            fraction = total / self.expected
+
+        if fraction is None:
             Prog.logger.info(self.progress, total // self.log_with)
         else:
-            Prog.logger.info(self.progress, total // self.log_with, (100 * total / self.expected))
+            Prog.logger.info(self.progress, total // self.log_with, 100 * fraction)
 
     def done(self) -> None:
         """
@@ -216,3 +220,20 @@ class Loop:  # pylint: disable=too-many-instance-attributes
         total = self.shared_counter.value
         if total >= self.log_every or self.expected is None or self.expected >= self.log_every:
             Prog.logger.info(self.completed, total)
+
+
+def each_file_line(path: str, loop: Optional[Loop] = None) -> Iterator[Tuple[int, str]]:
+    """
+    Loop on each file line.
+    """
+    size = Stat.stat(path).st_size
+    number = 0
+    offset = 0
+    with open(path, 'r') as file:
+        for line in file:
+            if loop is not None:
+                offset += len(line)
+                fraction = offset / size
+                loop.step(fraction)
+            number += 1
+            yield number, line
