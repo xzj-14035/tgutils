@@ -231,9 +231,10 @@ def each_file_line(path: str, loop: Optional[Loop] = None) -> Iterator[Tuple[int
     offset = 0
     with open(path, 'r') as file:
         for line in file:
-            if loop is not None:
-                offset += len(line)
-                fraction = offset / size
-                loop.step(fraction)
             number += 1
             yield number, line
+            if loop is None:
+                continue
+            offset += len(line)
+            fraction = offset / size
+            loop.step(fraction)
