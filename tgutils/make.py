@@ -50,20 +50,20 @@ def tg_require(*paths: Strings) -> None:
         require(*paths_list)
         return
 
-    current = Invocation.current
-    old_is_parallel = current.context['is_parallel']
-    old_size = current.context['parallel_size']
-    old_index = current.context['parallel_index']
+    context = require_context()
+    old_is_parallel = context['is_parallel']
+    old_size = context['parallel_size']
+    old_index = context['parallel_index']
     try:
-        current.context['is_parallel'] = True
-        current.context['parallel_size'] = len(paths_list)
+        context['is_parallel'] = True
+        context['parallel_size'] = len(paths_list)
         for index, path in enumerate(paths_list):
-            current.context['parallel_index'] = index
+            context['parallel_index'] = index
             require(path)
     finally:
-        current.context['is_parallel'] = old_is_parallel
-        current.context['parallel_size'] = old_size
-        current.context['parallel_index'] = old_index
+        context['is_parallel'] = old_is_parallel
+        context['parallel_size'] = old_size
+        context['parallel_index'] = old_index
 
 
 def parallel_jobs() -> int:
@@ -74,8 +74,9 @@ def parallel_jobs() -> int:
     This assumes all the actions of the innermost ``tg_require`` in the current context are
     executed, and tries to utilize all the available CPUs for them.
     """
-    current = Invocation.current
-    is_parallel = current.context.get('is_parallel', False)
+    context = require_context()
+
+    is_parallel = context.get('is_parallel', False)
     if not is_parallel:
         return 0
 
@@ -83,11 +84,11 @@ def parallel_jobs() -> int:
     if jobs == 0:
         return 0
 
-    size = current.context['parallel_size']
+    size = context['parallel_size']
     if size > jobs:
         return 1
 
-    index = current.context['parallel_index']
+    index = context['parallel_index']
     return int(((index + 1) / size) * jobs) - int((index / size) * jobs)
 
 
@@ -96,9 +97,9 @@ def reset_make() -> None:  # type: ignore # pylint: disable=function-redefined
     Reset the persistent context (for tests).
     """
     dm_reset_make()
-    Invocation.top.context['is_parallel'] = False
-    Invocation.top.context['parallel_size'] = -1
-    Invocation.top.context['parallel_index'] = -1
+    Invocation.top.require_context['is_parallel'] = False
+    Invocation.top.require_context['parallel_size'] = -1
+    Invocation.top.require_context['parallel_index'] = -1
 
 
 reset_make()
