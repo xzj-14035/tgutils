@@ -35,14 +35,21 @@ def main(parser: ArgumentParser,  # type: ignore # pylint: disable=function-rede
     da_main(parser, functions, adapter=_adapter)
 
 
+def maximal_open_files() -> None:
+    """
+    Ensure we can use the maximal number of open files at the same time.
+    """
+    (_soft, hard) = resource.getrlimit(resource.RLIMIT_NOFILE)  # pylint: disable=invalid-name
+    resource.setrlimit(resource.RLIMIT_NOFILE, (hard, hard))
+
+
 def tgutils_adapter(args: Namespace) -> None:  # pylint: disable=unused-argument
     """
     Perform last minute adaptation of the program following parsing the command line options.
     """
     _np.seterr(all='raise')
 
-    (_soft, hard) = resource.getrlimit(resource.RLIMIT_NOFILE)  # pylint: disable=invalid-name
-    resource.setrlimit(resource.RLIMIT_NOFILE, (hard, hard))
+    maximal_open_files()
 
     _set_numpy_random_seed()
 
