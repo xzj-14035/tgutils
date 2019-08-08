@@ -59,7 +59,7 @@ class BaseSeries(Series):
         index_path = path + '.index'
         if np.BaseArray.exists(index_path):
             index = np.BaseArray.read_array(index_path, mmap_mode)
-            series.set_axis(index, axis=0, inplace=True)  # type: ignore
+            series.set_axis(index, axis=0, inplace=True)
 
         return series
 
@@ -181,12 +181,12 @@ class BaseFrame(Frame):
         index_path = path + '.index'
         if np.BaseArray.exists(index_path):
             index = np.BaseArray.read_array(index_path, mmap_mode)
-            frame.set_axis(index, axis=0, inplace=True)  # type: ignore
+            frame.set_axis(index, axis=0, inplace=True)
 
         columns_path = path + '.columns'
         if np.BaseArray.exists(columns_path):
             columns = np.BaseArray.read_array(columns_path, mmap_mode)
-            frame.set_axis(columns, axis=1, inplace=True)  # type: ignore
+            frame.set_axis(columns, axis=1, inplace=True)
 
         return frame
 
