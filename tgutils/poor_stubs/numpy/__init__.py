@@ -9,6 +9,7 @@ from typing import List
 from typing import Tuple
 from typing import Union
 
+import numpy.char as char
 import numpy.random as random
 
 
