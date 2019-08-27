@@ -11,6 +11,7 @@ rm -rf \
     junk* \
     .mypy_cache \
     .publish_html \
+    .qsub \
     .reformat \
     tgutils/version.py \
     sphinx/generated \

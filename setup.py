@@ -8,8 +8,6 @@ import os
 import re
 import subprocess
 
-VERSION = '0.1'
-
 
 def readme():
     sphinx = re.compile(':py:[a-z]+:(`[^`]+`)')
@@ -17,25 +15,21 @@ def readme():
         return sphinx.sub('`\\1`', readme_file.read())
 
 
-def version_from_hg():
-    subprocess.check_call(['tools/install_hg_hooks'])
+def version_from_git():
+    subprocess.check_call(['tools/install_git_hooks'])
 
     # PEP440 forbids placing the commit hash in the version number.
     # Counting the commits since the tag must therefore suffice to identify the commit.
-    command = ['hg', 'log', '-r', 'tip', '--template', '{latesttag} {latesttagdistance}']
-    results = subprocess.check_output(command).decode('utf8').split(' ')
-    latest_tag = results[0]
-    commits_count_since_tag = results[1]
-    global VERSION
-    if latest_tag != VERSION:
-        print('WARNING: version updated from: %s to %s; you MUST `hg tag %s` after commit!'
-              % (latest_tag, VERSION, VERSION))
-    version = '%s.%s' % (VERSION, commits_count_since_tag)
+    command = ['git', 'describe', '--tags']
+    results = subprocess.check_output(command).decode('utf8').strip().split('-')
 
-    # PEP440 also forbids having a simple '.dev' suffix.
-    # Instead we must give an explicit number (0) which is just noise.
-    command = ['hg', 'status']
-    local_modifications = subprocess.check_output(command)
+    version = results[0]
+    if len(results) > 1:
+        version += '.' + results[1]
+
+    command = ['git', 'status', '--porcelain']
+    local_modifications = subprocess.check_output(command).strip()
+    # Obey PEP440 so just add a `.dev0` suffix if this is not committed yet.
     if local_modifications:
         version += '.dev0'
 
@@ -61,8 +55,8 @@ def version_from_file():
 
 
 def generate_version():
-    if os.path.exists('.hg'):
-        return version_from_hg()
+    if os.path.exists('.git'):
+        return version_from_git()
     return version_from_file()
 
 
@@ -169,7 +163,7 @@ class ReformatCommand(SimpleCommand):
 
 
 class NoUnknownFilesCommand(SimpleCommand):
-    description = 'ensure there are no source files hg is not aware of'
+    description = 'ensure there are no source files git is not aware of'
     command = ['tools/no_unknown_files']
 
 
@@ -197,7 +191,7 @@ setup(name='tgutils',
           'Intended Audience :: Developers',
       ],
       keywords='pandas numpy bioinformatics',
-      url='https://bitbucket.org/orenbenkiki/tgutils',
+      url='https://github.com/orenbenkiki/tgutils.git',
       author='Oren Ben-Kiki',
       author_email='oren@ben-kiki.org',
       license='MIT',
