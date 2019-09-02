@@ -1,6 +1,8 @@
 TGUtils - Utilities for Tanay Group lab code
 ============================================
 
+[![Build Status](https://travis-ci.org/tanaylab/tgutils.svg?branch=master)](https://travis-ci.org/tanaylab/tgutils)
+
 This package contains common utilities used by the Tanay Group Python lab code (for example,
 ``metacell``). These utilities are generally useful and not associated with any specific project.
 
