@@ -4,7 +4,7 @@ TGUtils - Utilities for Tanay Group lab code
 .. image:: https://travis-ci.org/tanaylab/tgutils.svg?branch=master
     :target: https://travis-ci.org/tanaylab/tgutils
 
-.. image:: https://readthedocs.org/projects/tgutils?version=latest
+.. image:: https://readthedocs.org/projects/tgutils/badge/?version=latest
     :target: https://tgutils.readthedocs.io/en/latest/?badge=latest
     :alt: Documentation Status
 
