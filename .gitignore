@@ -8,6 +8,7 @@ html
 junk*
 metacell/version.py
 .mypy_cache
+.poor_stubs
 .publish_html
 __pycache__
 .qsub

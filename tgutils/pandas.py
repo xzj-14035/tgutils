@@ -125,7 +125,7 @@ class BaseSeries(Series):
         return cls.am(Series(np.zeros(len(index), dtype=cls.dtype), index=index))
 
     @classmethod
-    def empty(cls: Type[S], index: Collection) -> S:  # pylint: disable=arguments-differ
+    def uninitialized(cls: Type[S], index: Collection) -> S:  # pylint: disable=arguments-differ
         """
         Return an uninitialized series
         """
@@ -136,7 +136,7 @@ class BaseSeries(Series):
         """
         Return a series full of zeros.
         """
-        series = cls.empty(index=index)
+        series = cls.uninitialized(index=index)
         series.values.fill(value)
         return series
 
@@ -260,8 +260,8 @@ class BaseFrame(Frame):
         return cls._make(np.zeros, index=index, columns=columns)
 
     @classmethod
-    def empty(cls: Type[F], *,  # pylint: disable=arguments-differ
-              index: Collection, columns: Collection) -> F:
+    def uninitialized(cls: Type[F], *,  # pylint: disable=arguments-differ
+                      index: Collection, columns: Collection) -> F:
         """
         Return an uninitialized frame
         """
@@ -272,7 +272,7 @@ class BaseFrame(Frame):
         """
         Return a frame full of some value.
         """
-        frame = cls.empty(index=index, columns=columns)
+        frame = cls.uninitialized(index=index, columns=columns)
         frame.values.fill(value)
         return frame
 

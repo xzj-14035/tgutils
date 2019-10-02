@@ -168,7 +168,7 @@ class BaseArray(ndarray):
         return cls.am(zeros(shape, dtype=cls.dtype))
 
     @classmethod
-    def empty(cls: Type[A], shape: Union[int, Tuple[int, ...]]) -> A:
+    def uninitialized(cls: Type[A], shape: Union[int, Tuple[int, ...]]) -> A:
         """
         Return an uninitialized array.
         """
@@ -181,7 +181,7 @@ class BaseArray(ndarray):
         """
         Return an array full of some value.
         """
-        array = cls.empty(shape)
+        array = cls.uninitialized(shape)
         array.fill(value)
         return array
 

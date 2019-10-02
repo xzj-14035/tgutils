@@ -180,7 +180,7 @@ class Loop:  # pylint: disable=too-many-instance-attributes
         self.log_with = log_with or log_every
 
         #: The shared memory iteration counter.
-        self.shared_counter = Value(ctypes.c_int32)  # type: ignore
+        self.shared_counter = Value(ctypes.c_int32)
 
         #: Granularity of parallel counting.
         self.local_every = self.log_every // 10

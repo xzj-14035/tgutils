@@ -215,7 +215,7 @@ class Qsubber:  # pylint: disable=too-many-instance-attributes,too-few-public-me
             if self.verbose:
                 _print('%s - qsubber - INFO - Submitted array: %s.*'
                        % (datetime.now(), array_path_prefix))
-            completed = subprocess.run(array_path_prefix + '.submit.sh')
+            completed = subprocess.run(array_path_prefix + '.submit.sh', check=True)
             return completed.returncode
         except BaseException:
             raise RuntimeError('Failed to submit: %s.submit.sh' % array_path_prefix)
@@ -302,7 +302,7 @@ def _default_slots(_index: Optional[str],  # pylint: disable=too-many-return-sta
 
 def _configuration() -> List[int]:
     configuration: List[int] = []
-    qhost = subprocess.run(['qhost', '-q'], stdout=subprocess.PIPE)
+    qhost = subprocess.run(['qhost', '-q'], stdout=subprocess.PIPE, check=True)
     for line in qhost.stdout.decode('utf-8').split('\n'):
         if line:
             fields = line.split()
