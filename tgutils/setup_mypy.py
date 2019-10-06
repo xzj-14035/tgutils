@@ -6,7 +6,7 @@ TODO: This is a horrible hack.
 
 import os
 
-if not os.path.exists('.poor_stubs'):
-    os.symlink(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'poor_stubs'),
-               '.poor_stubs')
+if os.path.exists('.poor_stubs'):
+    os.remove('.poor_stubs')
+os.symlink(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'poor_stubs'), '.poor_stubs')
 os.environ['MYPYPATH'] = '.poor_stubs'
