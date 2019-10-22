@@ -1,5 +1,4 @@
 include tgutils/py.typed
-include tgutils/poor_stubs/*.pyi
 include tgutils/poor_stubs/*/*.pyi
 include tgutils/poor_stubs/*/*/*.pyi
 include tests/*.py

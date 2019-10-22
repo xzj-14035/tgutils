@@ -17,7 +17,7 @@ def tg_require(*paths: Strings) -> None:
     innermost call is used.
 
     The ``parallel_size`` and ``parallel_index`` context can then be embedded in the ``run_prefix``
-    of the actions, to be passed to ``qsubber`` which uses this information to optimize the
+    of the actions, to be passed to ``tg_qsub`` which uses this information to optimize the
     assignment of CPUs to SunGrid jobs.
 
     For example, suppose you wrote the following in ``DynaMake.yaml``:
@@ -29,9 +29,9 @@ def tg_require(*paths: Strings) -> None:
             step: my_expensive_multi_processing_step
           then:
             run_prefix:
-              'qsubber -v -I {parallel_index} -S {parallel_size} -j job-{action_id} -s 8- --'
+              'tg_qsub -v -I {parallel_index} -S {parallel_size} -j job-{action_id} -s 8- --'
 
-    Then ``qsubber`` will allocate at least 8 CPUs for each action invoked by ``some_step``. If
+    Then ``tg_qsub`` will allocate at least 8 CPUs for each action invoked by ``some_step``. If
     there are only a few such invocations (say, up to one per cluster server), it may assign more
     CPUs to each invocation (up to all the CPUs on each server). If there are many invocations, it
     will assign less, to ensure as many invocations as possible run in parallel.

@@ -135,7 +135,7 @@ class Qsubber:  # pylint: disable=too-many-instance-attributes,too-few-public-me
             array_size_file.write('%s\n' % array_size)
 
         if self.verbose:
-            _print('%s - qsubber - INFO - Submitted job: %s in: %s.*'
+            _print('%s - tg_qsub - INFO - Submitted job: %s in: %s.*'
                    % (datetime.now(), self.job_id, job_path_prefix))
 
         return is_master, job_path_prefix
@@ -164,7 +164,7 @@ class Qsubber:  # pylint: disable=too-many-instance-attributes,too-few-public-me
         with open(job_run_path, 'w') as job_run_file:
             job_run_file.write('#!/bin/sh\n')
             job_run_file.write("echo `date +'%F %T.%N' | sed 's/......$//'` ")
-            job_run_file.write('- qsubber - Running %s on `hostname`\n' % job_run_path)
+            job_run_file.write('- tg_qsub - Running %s on `hostname`\n' % job_run_path)
             job_run_file.write(' '.join([shlex.quote(argument)
                                          for argument in self.command_arguments]))
             job_run_file.write('\n')
@@ -213,7 +213,7 @@ class Qsubber:  # pylint: disable=too-many-instance-attributes,too-few-public-me
     def _submit_array(self, array_path_prefix: str) -> int:
         try:
             if self.verbose:
-                _print('%s - qsubber - INFO - Submitted array: %s.*'
+                _print('%s - tg_qsub - INFO - Submitted array: %s.*'
                        % (datetime.now(), array_path_prefix))
             completed = subprocess.run(array_path_prefix + '.submit.sh', check=True)
             return completed.returncode
@@ -240,7 +240,7 @@ class Qsubber:  # pylint: disable=too-many-instance-attributes,too-few-public-me
             if text:
                 _print(text)
         if job_status > 0 and self.verbose:
-            _print('%s - qsubber - ERROR - Failed job: %s in: %s.*'
+            _print('%s - tg_qsub - ERROR - Failed job: %s in: %s.*'
                    % (datetime.now(), self.job_id, job_path_prefix))
 
 
