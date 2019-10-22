@@ -29,7 +29,7 @@ def tg_require(*paths: Strings) -> None:
             step: my_expensive_multi_processing_step
           then:
             run_prefix:
-              'tg_qsub -v -I {parallel_index} -S {parallel_size} -j job-{action_id} -s 8- --'
+              'tg_qsub -v -I {parallel_index} -S {parallel_size} -j job-{submit_id} -s 8- --'
 
     Then ``tg_qsub`` will allocate at least 8 CPUs for each action invoked by ``some_step``. If
     there are only a few such invocations (say, up to one per cluster server), it may assign more
@@ -43,7 +43,7 @@ def tg_require(*paths: Strings) -> None:
 
     This is overly convoluted, sub-optimal, and very specific to the way we distribute actions on
     the SunGrid cluster in the Tanay Group lab. The cluster manager should arguably do much better
-    without all these complications. However, all we have is ``qsub``.
+    without all these complications. However, all we have is ``tg_qsub``.
     """
     paths_list = list(each_string(*paths))
     if len(paths_list) <= 1:
