@@ -115,7 +115,7 @@ class BaseSeries(Series):
                              % (data.__class__.__module__, data.__class__.__qualname__,
                                 Series.__module__, Series.__qualname__))
         array = data.values
-        np.BaseArray._am_shape(array, 1)  # pylint: disable=protected-access
+        np.BaseArray.am_array(array)
 
     @classmethod
     def zeros(cls: Type[S], index: Collection) -> S:
@@ -250,7 +250,7 @@ class BaseFrame(Frame):
                              % (data.__class__.__module__, data.__class__.__qualname__,
                                 Frame.__module__, Frame.__qualname__))
         array = data.values
-        np.BaseArray._am_shape(array, 2)  # pylint: disable=protected-access
+        np.BaseArray.am_matrix(array)
 
     @classmethod
     def zeros(cls: Type[F], *, index: Collection, columns: Collection) -> F:

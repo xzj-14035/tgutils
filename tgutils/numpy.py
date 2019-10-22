@@ -84,7 +84,7 @@ class BaseArray(ndarray):
         Read a 1D array of any type from the disk.
         """
         array = BaseArray._read(path, mmap_mode)
-        BaseArray._am_shape(array, 1)
+        BaseArray.am_array(array)
         return array
 
     @staticmethod
@@ -93,7 +93,7 @@ class BaseArray(ndarray):
         Read a 2D array of any type from the disk.
         """
         array = BaseArray._read(path, mmap_mode)
-        BaseArray._am_shape(array, 2)
+        BaseArray.am_matrix(array)
         return array
 
     @classmethod
@@ -115,7 +115,7 @@ class BaseArray(ndarray):
         assert not path.endswith('.txt')
 
         if data.dtype == 'O':
-            BaseArray._am_shape(data, 1)
+            BaseArray.am_array(data)
             with open(path + '.txt', 'w') as file:
                 file.write('\n'.join(data))
                 file.write('\n')
@@ -127,7 +127,7 @@ class BaseArray(ndarray):
         """
         Declare an array as being of this type.
         """
-        BaseArray._am_shape(data, cls.dimensions)
+        BaseArray.has_dimensions(data, cls.dimensions)
         if cls.dtype not in [data.dtype.name, data.dtype.kind]:
             raise ValueError('unexpected data type: %s instead of: %s'
                              % (data.dtype, cls.dtype))
@@ -141,14 +141,31 @@ class BaseArray(ndarray):
         if not isinstance(data, ndarray):
             data = array(data, dtype=cls.dtype)
 
-        BaseArray._am_shape(data, cls.dimensions)
+        BaseArray.has_dimensions(data, cls.dimensions)
         if cls.dtype not in [data.dtype.name, data.dtype.kind]:
             data = data.astype(cls.dtype)
 
         return data  # type: ignore
 
     @staticmethod
-    def _am_shape(data: ndarray, expected_dimensions: int) -> None:
+    def am_array(data: ndarray) -> None:
+        """
+        Declare an array as being 1-dimensional.
+        """
+        BaseArray.has_dimensions(data, 1)
+
+    @staticmethod
+    def am_matrix(data: ndarray) -> None:
+        """
+        Declare an array as being 2-dimensional.
+        """
+        BaseArray.has_dimensions(data, 2)
+
+    @staticmethod
+    def has_dimensions(data: ndarray, expected_dimensions: int) -> None:
+        """
+        Declare an array has the specified number of dimensions.
+        """
         if not isinstance(data, ndarray):
             raise ValueError('unexpected type: %s.%s instead of: %s.%s'
                              % (data.__class__.__module__, data.__class__.__qualname__,

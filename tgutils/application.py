@@ -126,17 +126,19 @@ def lock_file(lock_path: str, lock_fd: int) -> Iterator[None]:
     Perform some action while holding a file lock.
     """
     slept = 0.0
+    step = 0.1
     while True:
         try:
             fcntl.flock(lock_fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
             break
         except BaseException:  # pylint: disable=broad-except
-            slept += 0.1
-            if slept > 60:
+            if slept > 120:
                 raise RuntimeError('Failed to obtain lock file: %s '
-                                   'for more than 60 seconds'
+                                   'for more than 120 seconds'
                                    % lock_path)
-            sleep(0.1)
+            sleep(step)
+            slept += step
+            step *= 2.0
             continue
 
     try:
