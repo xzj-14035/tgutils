@@ -210,28 +210,22 @@ class Qsubber:  # pylint: disable=too-many-instance-attributes,too-few-public-me
     def _close_array(array_path_prefix: str) -> None:
         open(array_path_prefix + '.closed', 'w').close()
 
-    def _submit_array(self, array_path_prefix: str) -> int:
-        try:
-            if self.verbose:
-                _print('%s - tg_qsub - INFO - Submitted array: %s.*'
-                       % (datetime.now(), array_path_prefix))
-            completed = subprocess.run(array_path_prefix + '.submit.sh', check=True)
-            return completed.returncode
-        except BaseException:
-            raise RuntimeError('Failed to submit: %s.submit.sh' % array_path_prefix)
+    def _submit_array(self, array_path_prefix: str) -> None:
+        if self.verbose:
+            _print('%s - tg_qsub - INFO - Submitted array: %s.*'
+                   % (datetime.now(), array_path_prefix))
+        subprocess.run(array_path_prefix + '.submit.sh', check=False)
 
     @staticmethod
     def _wait_for_job_completion(job_path_prefix: str) -> int:
         job_success_path = job_path_prefix + '.success'
         job_failure_path = job_path_prefix + '.failure'
-        job_status: Optional[int] = None
-        while job_status is None:
-            sleep(1)
+        while True:
             if os.path.exists(job_success_path):
-                job_status = 0
-            elif os.path.exists(job_failure_path):
-                job_status = 1
-        return job_status
+                return 0
+            if os.path.exists(job_failure_path):
+                return 1
+            sleep(1)
 
     def _print_job_results(self, job_status: int, job_path_prefix: str) -> None:
         job_output_path = job_path_prefix + '.output'
