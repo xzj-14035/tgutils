@@ -13,6 +13,14 @@ import numpy.char as char
 import numpy.random as random
 
 
+class int32(int):
+    pass
+
+
+class float32(float):
+    pass
+
+
 class ArrayLike:
     def __contains__(self, v: Any) -> bool: ...
 
