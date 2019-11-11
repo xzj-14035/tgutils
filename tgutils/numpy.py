@@ -76,6 +76,9 @@ class BaseArray(ndarray):
         else:
             values = load(path + '.npy', mmap_mode)
 
+        if mmap_mode is None or mmap_mode == 'r':
+            values.setflags(write=False)
+
         return values
 
     @staticmethod

@@ -3,6 +3,7 @@ Submit a job to qsub in the Tanay Group lab.
 """
 
 from argparse import ArgumentParser
+from binascii import crc32
 from datetime import datetime
 from glob import glob
 from tgutils.application import lock_file
@@ -54,6 +55,9 @@ class Qsubber:  # pylint: disable=too-many-instance-attributes,too-few-public-me
                             help='Qsub actually schedules jobs every this number of seconds '
                                  '(default: 15).')
 
+        parser.add_argument('-x', '--extra', metavar='STR', default='',
+                            help='Additional low-level flags to pass to qsub (default: None).')
+
         parser.add_argument('-o', '--offset', metavar='SECONDS', default='3',
                             help='Qsub is using this offset from round times to schedule jobs '
                                  '(default: 3).')
@@ -79,6 +83,7 @@ class Qsubber:  # pylint: disable=too-many-instance-attributes,too-few-public-me
         self.every = int(args.every)
         self.offset = int(args.offset)
         self.command_arguments = [args.command] + args.arguments
+        self.extra = args.extra or ''
 
         os.makedirs(self.tmp_dir, exist_ok=True)
         self.lock_path = os.path.join(self.tmp_dir, 'lock')
@@ -153,6 +158,8 @@ class Qsubber:  # pylint: disable=too-many-instance-attributes,too-few-public-me
 
         while True:
             array_name = 'a%s.s%s' % (array_id % 10000, self.slots)
+            if self.extra:
+                array_name += '.%x' % crc32(self.extra.encode('utf-8'))
             array_path_prefix = os.path.join(self.tmp_dir, array_name + '.array')
             if not os.path.exists(array_path_prefix + '.closed'):
                 return deadline, array_path_prefix
@@ -163,8 +170,10 @@ class Qsubber:  # pylint: disable=too-many-instance-attributes,too-few-public-me
         job_run_path = job_path_prefix + '.run.sh'
         with open(job_run_path, 'w') as job_run_file:
             job_run_file.write('#!/bin/sh\n')
+            job_run_file.write("export DYNAMAKE_JOBS='%s'\n" % self.slots)
             job_run_file.write("echo `date +'%F %T.%N' | sed 's/......$//'` ")
-            job_run_file.write('- tg_qsub - Running %s on `hostname`\n' % job_run_path)
+            job_run_file.write('- tg_qsub - Running %s on `hostname` using %s slots\n'
+                               % (job_run_path, self.slots))
             job_run_file.write(' '.join([shlex.quote(argument)
                                          for argument in self.command_arguments]))
             job_run_file.write('\n')
@@ -194,6 +203,8 @@ class Qsubber:  # pylint: disable=too-many-instance-attributes,too-few-public-me
         with open(array_submit_path, 'w') as array_submit_file:
             array_submit_file.write('#!/bin/sh\n')
             array_submit_file.write('qsub ')
+            if self.extra:
+                array_submit_file.write('%s ' % self.extra)
             array_submit_file.write('-N %s ' % array_job_name)
             array_submit_file.write('-t 1-`cat %s.size` ' % array_path_prefix)
             array_submit_file.write('-j y ')

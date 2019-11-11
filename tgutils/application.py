@@ -18,6 +18,7 @@ import fcntl
 import numpy as _np
 import os
 import resource
+import sys
 
 
 def main(parser: ArgumentParser,  # type: ignore # pylint: disable=function-redefined
@@ -35,6 +36,12 @@ def main(parser: ArgumentParser,  # type: ignore # pylint: disable=function-rede
     da_main(parser, functions, adapter=_adapter)
 
 
+def maximal_processors() -> None:
+    """
+    Limit the maximal number of processors to use if we are running inside some cluster environment.
+    """
+
+
 def maximal_open_files() -> None:
     """
     Ensure we can use the maximal number of open files at the same time.
@@ -48,6 +55,8 @@ def tgutils_adapter(args: Namespace) -> None:  # pylint: disable=unused-argument
     Perform last minute adaptation of the program following parsing the command line options.
     """
     _np.seterr(all='raise')
+
+    maximal_processors()
 
     maximal_open_files()
 
@@ -127,18 +136,19 @@ def lock_file(lock_path: str, lock_fd: int) -> Iterator[None]:
     """
     slept = 0.0
     step = 0.1
+    locked = True
+
     while True:
         try:
             fcntl.flock(lock_fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
-            if slept > 2.0:
-                Prog.logger.warning('Waited for: %s seconds to obtain lock file: %s',
-                                    round(slept), lock_path)
             break
+
         except BaseException:  # pylint: disable=broad-except
-            if slept > 600:
-                raise RuntimeError('Failed to obtain lock file: %s '
-                                   'for more than 600 seconds'
-                                   % lock_path)
+            if slept > 60.0:
+                # TODO: Add the log prefix at least...
+                sys.stderr.write('WARNING: Timeout obtaining lock file: %s\n' % lock_path)
+                locked = False
+                break
             sleep(step)
             slept += step
             if step < 1.0:
@@ -148,7 +158,8 @@ def lock_file(lock_path: str, lock_fd: int) -> Iterator[None]:
     try:
         yield
     finally:
-        fcntl.flock(lock_fd, fcntl.LOCK_UN)
+        if locked:
+            fcntl.flock(lock_fd, fcntl.LOCK_UN)
 
 
 def tg_qsub_logger(logger: Logger) -> Logger:
