@@ -44,7 +44,7 @@ def load_dictionary(path: str, data: Any = None, *,
     """
     if data is None:
         with open(path, 'r') as file:
-            data = yaml.full_load(file.read())
+            data = yaml.safe_load(file.read())
 
     if not isinstance(data, dict):
         raise RuntimeError('The file: %s '
