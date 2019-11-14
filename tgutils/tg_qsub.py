@@ -104,15 +104,15 @@ class Qsubber:  # pylint: disable=too-many-instance-attributes,too-few-public-me
 
         if is_master:
             self._submit_array(array_path_prefix)
+
         job_status = Qsubber._wait_for_job_completion(job_path_prefix)
 
         with lock_file(self.lock_path, self.lock_fd):
             self._print_job_results(job_status, job_path_prefix)
+            Qsubber._remove_job_from_array(array_path_prefix)
 
         if job_status == 0:
             _remove_files(job_path_prefix)
-        if is_master and not glob(array_path_prefix.replace('.array', '.*.failure')):
-            _remove_files(array_path_prefix)
 
         return job_status
 
@@ -145,6 +145,21 @@ class Qsubber:  # pylint: disable=too-many-instance-attributes,too-few-public-me
 
         return is_master, job_path_prefix
 
+    @staticmethod
+    def _remove_job_from_array(array_path_prefix: str) -> None:
+        array_size_path = array_path_prefix + '.size'
+        with open(array_size_path, 'r') as array_size_file:
+            array_size = int(array_size_file.read())
+            assert array_size > 0
+
+        array_size -= 1
+        if array_size == 0:
+            _remove_files(array_path_prefix)
+            return
+
+        with open(array_size_path, 'w') as array_size_file:
+            array_size_file.write('%s\n' % array_size)
+
     def _identify_array(self) -> Tuple[int, str]:
         now = int(datetime.now().timestamp())
         array_id = (now - self.offset) // self.every
@@ -170,7 +185,8 @@ class Qsubber:  # pylint: disable=too-many-instance-attributes,too-few-public-me
         job_run_path = job_path_prefix + '.run.sh'
         with open(job_run_path, 'w') as job_run_file:
             job_run_file.write('#!/bin/sh\n')
-            job_run_file.write("export DYNAMAKE_JOBS='%s'\n" % self.slots)
+            if '-' not in self.slots:
+                job_run_file.write("export DYNAMAKE_JOBS='%s'\n" % self.slots)
             job_run_file.write("echo `date +'%F %T.%N' | sed 's/......$//'` ")
             job_run_file.write('- tg_qsub - Running %s on `hostname` using %s slots\n'
                                % (job_run_path, self.slots))

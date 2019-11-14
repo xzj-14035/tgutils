@@ -10,6 +10,7 @@ from dynamake.application import reset_application as da_reset_application
 from logging import Logger
 from logging import LoggerAdapter
 from multiprocessing import Lock
+from socket import gethostname
 from time import sleep
 from typing import Any
 from typing import Iterator
@@ -125,30 +126,33 @@ class FileLockLoggerAdapter(LoggerAdapter):
         Log a message while locking the directory.
         """
         with self._lock:
-            with lock_file(self._path, self._fd):
+            with lock_file(self._path, self._fd, is_just_for_log=True):
                 super().log(*args, **kwargs)
 
 
 @contextmanager
-def lock_file(lock_path: str, lock_fd: int) -> Iterator[None]:
+def lock_file(lock_path: str, lock_fd: int, *,
+              shared: bool = False, is_just_for_log: bool = False) -> Iterator[None]:
     """
     Perform some action while holding a file lock.
     """
     slept = 0.0
-    step = 0.1
+    step = 1 / 8
     locked = True
 
     while True:
         try:
-            fcntl.flock(lock_fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            mode = fcntl.LOCK_SH if shared else fcntl.LOCK_EX
+            fcntl.flock(lock_fd, mode | fcntl.LOCK_NB)
             break
 
         except BaseException:  # pylint: disable=broad-except
-            if slept > 60.0:
-                # TODO: Add the log prefix at least...
-                sys.stderr.write('WARNING: Timeout obtaining lock file: %s\n' % lock_path)
+            if is_just_for_log and slept > 60.0:
+                sys.stderr.write('WARNING: %s @ %s: Timeout waiting %s seconds for lock file: %s\n'
+                                 % (os.getpid(), gethostname(), round(slept), lock_path))
                 locked = False
                 break
+
             sleep(step)
             slept += step
             if step < 1.0:
@@ -156,6 +160,9 @@ def lock_file(lock_path: str, lock_fd: int) -> Iterator[None]:
             continue
 
     try:
+        if locked and slept >= 60.0:
+            sys.stderr.write('WARNING: %s @ %s: Waited %s seconds for lock file: %s\n'
+                             % (os.getpid(), gethostname(), round(slept), lock_path))
         yield
     finally:
         if locked:
