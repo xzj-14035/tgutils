@@ -25,7 +25,8 @@ import os
 #: Type variable for arrays.
 A = TypeVar('A', bound='BaseArray')  # pylint: disable=invalid-name
 
-_C_TYPES = dict(float32=ctypes.c_float, int32=ctypes.c_int32, float64=ctypes.c_double)
+_C_TYPES = \
+    dict(float32=ctypes.c_float, int32=ctypes.c_int32, float64=ctypes.c_double, bool=ctypes.c_bool)
 
 
 class BaseArray(ndarray):
